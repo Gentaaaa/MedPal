@@ -14,6 +14,8 @@ const appointmentSchema = new mongoose.Schema({
 attended: {
   type: Boolean,
   default: false,
+  isPresent: { type: Boolean, default: false }
+
 }
 
 

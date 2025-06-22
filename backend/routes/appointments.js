@@ -384,7 +384,7 @@ router.delete("/:id", verifyToken, async (req, res) => {
     res.status(500).json({ message: "Gabim në server." });
   }
 });
-// PUT /api/appointments/:id/presence
+// backend: routes/appointments.js
 router.put("/:id/presence", verifyToken, async (req, res) => {
   try {
     const { isPresent } = req.body;
