@@ -312,4 +312,55 @@ router.get("/unseen-count", verifyToken, async (req, res) => {
   }
 });
 
+router.delete("/:id", verifyToken, async (req, res) => {
+  try {
+    const appointment = await Appointment.findById(req.params.id);
+
+    if (!appointment) {
+      return res.status(404).json({ message: "Termini nuk u gjet." });
+    }
+
+    // Vetëm pacienti që e ka rezervuar ose mjeku i caktuar mund ta fshijë
+    if (
+      req.user.role === "patient" && appointment.patientId.toString() !== req.user.id ||
+      req.user.role === "doctor" && appointment.doctorId.toString() !== req.user.id
+    ) {
+      return res.status(403).json({ message: "Nuk jeni të autorizuar për këtë veprim." });
+    }
+
+    await appointment.deleteOne();
+    res.json({ message: "Termini u fshi me sukses." });
+  } catch (err) {
+    console.error("❌ Error deleting appointment:", err);
+    res.status(500).json({ message: "Gabim gjatë fshirjes së terminit." });
+  }
+});
+
+// ✅ PUT /api/appointments/:id/attended - shëno si prezencë
+router.put("/:id/attended", verifyToken, async (req, res) => {
+  try {
+    const appointment = await Appointment.findById(req.params.id);
+
+    if (!appointment) {
+      return res.status(404).json({ message: "Termini nuk u gjet." });
+    }
+
+    // Lejohet vetëm nga mjeku ose klinika
+    if (
+      (req.user.role === "doctor" && appointment.doctorId.toString() !== req.user.id) ||
+      (req.user.role === "clinic" && appointment.doctorId.clinicId?.toString() !== req.user.id)
+    ) {
+      return res.status(403).json({ message: "Nuk jeni të autorizuar për këtë veprim." });
+    }
+
+    appointment.attended = true;
+    await appointment.save();
+    res.json({ message: "✅ Termini u shënua si i kryer me sukses." });
+  } catch (err) {
+    console.error("❌ Error në PUT /:id/attended:", err);
+    res.status(500).json({ message: "Gabim gjatë përditësimit." });
+  }
+});
+
+
 module.exports = router;

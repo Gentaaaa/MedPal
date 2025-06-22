@@ -90,7 +90,6 @@ router.get("/me", verifyToken, async (req, res) => {
 });
 
 // 📄 GET /api/reports/:id/pdf → gjenero PDF të raportit
-// 📄 GET /api/reports/:id/pdf → gjenero PDF të raportit
 router.get("/:id/pdf", verifyToken, async (req, res) => {
   try {
     const report = await VisitReport.findById(req.params.id)
@@ -117,42 +116,37 @@ router.get("/:id/pdf", verifyToken, async (req, res) => {
     doc.fontSize(20).text("📋 Raporti i Vizitës Mjekësore", { align: "center" });
     doc.moveDown(2);
 
-    // Të dhënat e pacientit
-    doc.fontSize(14).text("🧍‍♂️ Të dhënat e pacientit", { underline: true });
-    doc.moveDown(0.5);
-    doc.fontSize(12)
-      .text(`👤 Emri: ${report.patientId.name}`)
-      .text(`📧 Email: ${report.patientId.email}`)
-      .text(`🎂 Datëlindja: ${report.patientId.dateOfBirth || "N/A"}`)
-      .text(`🧬 Gjinia: ${report.patientId.gender || "N/A"}`)
-      .text(`🩸 Grupi i gjakut: ${report.patientId.bloodType || "N/A"}`);
-    doc.moveDown(1);
+    const field = (label, value) => {
+      doc.font("Helvetica-Bold").text(label, { continued: true });
+      doc.font("Helvetica").text(` ${value || "N/A"}`);
+    };
 
-    // Të dhënat e terminit
-    doc.fontSize(14).text("📅 Informacione të vizitës", { underline: true });
-    doc.moveDown(0.5);
-    doc.fontSize(12)
-      .text(`👨‍⚕️ Mjeku: ${report.doctorId.name}`)
-      .text(`📅 Data: ${report.appointmentId.date}`)
-      .text(`⏰ Ora: ${report.appointmentId.time}`);
-    doc.moveDown(1);
+    const sectionTitle = (title) => {
+      doc.moveDown().fontSize(14).fillColor("#333").text(title, { underline: true });
+      doc.moveDown(0.5);
+      doc.fontSize(12).fillColor("black");
+    };
 
-    // Raporti mjekësor
-    doc.fontSize(14).text("📝 Raporti mjekësor", { underline: true });
-    doc.moveDown(0.5);
-    doc.font("Helvetica-Bold").text("Diagnoza:");
-    doc.font("Helvetica").text(report.diagnosis || "N/A").moveDown();
+    sectionTitle("🧍‍♂️ Të dhënat e pacientit");
+    field("👤 Emri:", report.patientId.name);
+    field("📧 Email:", report.patientId.email);
+    field("🎂 Datëlindja:", report.patientId.dateOfBirth);
+    field("🧬 Gjinia:", report.patientId.gender);
+    field("🩸 Grupi i gjakut:", report.patientId.bloodType);
 
-    doc.font("Helvetica-Bold").text("Terapia / Rekomandime:");
-    doc.font("Helvetica").text(report.recommendation || "N/A").moveDown();
+    sectionTitle("📅 Detajet e vizitës");
+    field("👨‍⚕️ Mjeku:", report.doctorId.name);
+    field("📅 Data:", report.appointmentId.date);
+    field("⏰ Ora:", report.appointmentId.time);
 
-    doc.font("Helvetica-Bold").text("Simptoma:");
-    doc.font("Helvetica").text(report.symptoms || "N/A").moveDown();
+    sectionTitle("📝 Detaje të raportit mjekësor");
+    field("Diagnoza:", report.diagnosis);
+    field("Rekomandime:", report.recommendation);
+    field("Simptoma:", report.symptoms);
+    field("🌡️ Temperatura:", report.temperature);
+    field("🩺 Tensioni:", report.bloodPressure);
 
-    doc.text(`🌡️ Temperatura: ${report.temperature || "N/A"}`);
-    doc.text(`🩺 Tensioni: ${report.bloodPressure || "N/A"}`);
-
-    // Vendi për nënshkrim
+    // Nënshkrimi
     doc.moveDown(3);
     doc.font("Helvetica-Oblique").text("____________________________", { align: "right" });
     doc.text(`Nënshkrimi i mjekut (${report.doctorId.name})`, { align: "right" });
@@ -163,6 +157,7 @@ router.get("/:id/pdf", verifyToken, async (req, res) => {
     res.status(500).json({ message: "Gabim gjatë gjenerimit të raportit." });
   }
 });
+
 
 // 📋 GET /api/reports/clinic?from=2024-01-01&to=2024-12-31&doctorId=123
 router.get("/clinic", verifyToken, async (req, res) => {

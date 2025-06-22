@@ -67,6 +67,7 @@ export default function ClinicAppointments() {
       Ora: a.time,
       Doktori: a.doctorId?.name || "",
       Statusi: a.status,
+      Pjesëmarrja: a.attended ? "Po" : "Jo",
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(dataToExport);
@@ -128,6 +129,7 @@ export default function ClinicAppointments() {
                 <th>Doktori</th>
                 <th>Dokumente</th>
                 <th>Statusi</th>
+                <th>Pjesëmarrja</th>
                 <th>Raport</th>
               </tr>
             </thead>
@@ -171,6 +173,13 @@ export default function ClinicAppointments() {
                       <span className={`badge bg-${a.status === "approved" ? "success" : "secondary"}`}>
                         {a.status}
                       </span>
+                    )}
+                  </td>
+                  <td>
+                    {a.attended ? (
+                      <span className="badge bg-success">Po</span>
+                    ) : (
+                      <span className="text-muted">Jo</span>
                     )}
                   </td>
                   <td>

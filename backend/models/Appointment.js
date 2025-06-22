@@ -11,7 +11,14 @@ const appointmentSchema = new mongoose.Schema({
     type: String,
     enum: ["pending", "approved", "canceled"],
     default: "pending",
+attended: {
+  type: Boolean,
+  default: false,
+}
+
+
   },
+
   seenByPatient: { type: Boolean, default: false }, // 🆕
 });
 
