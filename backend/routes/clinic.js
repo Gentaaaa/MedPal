@@ -1,16 +1,17 @@
 const express = require("express");
 const router = express.Router();
 const verifyToken = require("../middleware/verifyToken");
+const bcrypt = require("bcrypt");
 
 const Department = require("../models/Department");
 const Service = require("../models/Service");
 const User = require("../models/User");
 
-// ==========================
+// =========================
 // 📁 DEPARTAMENTET
-// ==========================
+// =========================
 
-// ➕ Shto departament (vetëm klinika)
+// ➕ Shto departament
 router.post("/departments", verifyToken, async (req, res) => {
   if (req.user.role !== "clinic") {
     return res.status(403).json({ message: "Vetëm klinika mund të shtojë departamente." });
@@ -24,11 +25,12 @@ router.post("/departments", verifyToken, async (req, res) => {
     await newDepartment.save();
     res.status(201).json(newDepartment);
   } catch (err) {
+    console.error("❌ Gabim gjatë shtimit të departamentit:", err);
     res.status(500).json({ message: "Gabim gjatë shtimit të departamentit." });
   }
 });
 
-// 📥 Merr të gjithë departamentet e klinikës
+// 📥 Merr departamentet e klinikës
 router.get("/departments", verifyToken, async (req, res) => {
   if (req.user.role !== "clinic") {
     return res.status(403).json({ message: "Vetëm klinika ka qasje në këtë." });
@@ -38,43 +40,33 @@ router.get("/departments", verifyToken, async (req, res) => {
     const departments = await Department.find({ clinicId: req.user.id });
     res.json(departments);
   } catch (err) {
+    console.error("❌ Gabim gjatë marrjes së departamenteve:", err);
     res.status(500).json({ message: "Gabim gjatë marrjes së departamenteve." });
   }
 });
 
-// ==========================
-// 👨‍⚕️ MJEKËT
-// ==========================
-
-// 📋 Merr të gjithë mjekët e klinikës
-router.get("/doctors", verifyToken, async (req, res) => {
-  if (req.user.role !== "clinic") {
-    return res.status(403).json({ message: "Vetëm klinika ka qasje në këtë." });
-  }
-
+// 🗑️ Fshij departament
+router.delete("/departments/:id", verifyToken, async (req, res) => {
   try {
-    const doctors = await User.find({ role: "doctor", clinicId: req.user.id })
-      .select("-password")
-      .populate("departmentId", "name")
-      .populate("services", "name price");
-    res.json(doctors);
-  } catch (err) {
-    res.status(500).json({ message: "Gabim gjatë marrjes së mjekëve." });
+    await Department.findOneAndDelete({ _id: req.params.id, clinicId: req.user.id });
+    res.json({ message: "Departamenti u fshi me sukses." });
+  } catch {
+    res.status(500).json({ message: "Gabim gjatë fshirjes së departamentit." });
   }
 });
 
-// ==========================
-// 💊 SHËRBIMET
-// ==========================
 
-// ➕ Shto shërbim të ri për një departament (vetëm klinika)
+// =========================
+// 💊 SHËRBIMET
+// =========================
+
+// ➕ Shto shërbim
 router.post("/services", verifyToken, async (req, res) => {
   if (req.user.role !== "clinic") {
     return res.status(403).json({ message: "Vetëm klinika mund të shtojë shërbime." });
   }
 
   const { name, departmentId, price } = req.body;
-
   if (!name || !departmentId) {
     return res.status(400).json({ message: "Emri dhe departamenti janë të detyrueshëm." });
   }
@@ -84,11 +76,12 @@ router.post("/services", verifyToken, async (req, res) => {
     await newService.save();
     res.status(201).json({ message: "✅ Shërbimi u shtua me sukses!", service: newService });
   } catch (err) {
+    console.error("❌ Gabim gjatë shtimit të shërbimit:", err);
     res.status(500).json({ message: "Gabim gjatë shtimit të shërbimit." });
   }
 });
 
-// 📋 Merr të gjitha shërbimet e klinikës (bazuar në departamentet e saj)
+// 📋 Merr shërbimet e klinikës
 router.get("/services", verifyToken, async (req, res) => {
   if (req.user.role !== "clinic") {
     return res.status(403).json({ message: "Vetëm klinika ka qasje në këtë." });
@@ -104,17 +97,8 @@ router.get("/services", verifyToken, async (req, res) => {
     res.status(500).json({ message: "Gabim gjatë marrjes së shërbimeve." });
   }
 });
-// DELETE department
-router.delete("/departments/:id", verifyToken, async (req, res) => {
-  try {
-    await Department.findOneAndDelete({ _id: req.params.id, clinicId: req.user.id });
-    res.json({ message: "Departamenti u fshi me sukses." });
-  } catch {
-    res.status(500).json({ message: "Gabim gjatë fshirjes së departamentit." });
-  }
-});
 
-// DELETE service
+// 🗑️ Fshij shërbim
 router.delete("/services/:id", verifyToken, async (req, res) => {
   try {
     await Service.findByIdAndDelete(req.params.id);
@@ -124,7 +108,7 @@ router.delete("/services/:id", verifyToken, async (req, res) => {
   }
 });
 
-// PUT update service
+// ✏️ Përditëso shërbim
 router.put("/services/:id", verifyToken, async (req, res) => {
   const { name, price, departmentId } = req.body;
   try {
@@ -139,12 +123,54 @@ router.put("/services/:id", verifyToken, async (req, res) => {
   }
 });
 
-// 🔁 Përditëso të dhënat e një mjeku (departament/shërbime)
-router.put("/doctors/:id", verifyToken, async (req, res) => {
+// 📥 Shërbime publike
+router.get("/services/public", async (req, res) => {
+  try {
+    const services = await Service.find().populate("departmentId", "name");
+    res.json(services);
+  } catch (err) {
+    res.status(500).json({ message: "Gabim gjatë marrjes së shërbimeve." });
+  }
+});
+
+
+// =========================
+// 👨‍⚕️ MJEKËT
+// =========================
+
+// 📋 Merr mjekët e klinikës
+router.get("/doctors", verifyToken, async (req, res) => {
   if (req.user.role !== "clinic") {
-    return res.status(403).json({ message: "Vetëm klinikat mund të ndryshojnë mjekë." });
+    return res.status(403).json({ message: "Vetëm klinika ka qasje." });
   }
 
+  try {
+    const doctors = await User.find({ role: "doctor", clinicId: req.user.id })
+      .select("-password")
+      .populate("departmentId", "name")
+      .populate("services", "name price");
+    res.json(doctors);
+  } catch (err) {
+    res.status(500).json({ message: "Gabim gjatë marrjes së mjekëve." });
+  }
+});
+
+// 🗑️ Fshij mjek
+router.delete("/doctors/:id", verifyToken, async (req, res) => {
+  if (req.user.role !== "clinic") {
+    return res.status(403).json({ message: "Vetëm klinika mund të fshijë mjekë." });
+  }
+
+  try {
+    await User.findByIdAndDelete(req.params.id);
+    res.json({ message: "Mjeku u fshi me sukses." });
+  } catch (err) {
+    res.status(500).json({ message: "Gabim gjatë fshirjes së mjekut." });
+  }
+});
+
+// 🔁 Përditëso departament/shërbime të mjekut
+router.put("/doctors/:id", verifyToken, async (req, res) => {
   const { departmentId, services } = req.body;
 
   try {
@@ -159,45 +185,9 @@ router.put("/doctors/:id", verifyToken, async (req, res) => {
   }
 });
 
-// 🗑️ Fshij mjek
-router.delete("/doctors/:id", verifyToken, async (req, res) => {
-  if (req.user.role !== "clinic") {
-    return res.status(403).json({ message: "Vetëm klinikat mund të fshijnë mjekë." });
-  }
-
-  try {
-    await User.findByIdAndDelete(req.params.id);
-    res.json({ message: "Mjeku u fshi me sukses." });
-  } catch (err) {
-    res.status(500).json({ message: "Gabim gjatë fshirjes së mjekut." });
-  }
-});
-// 📥 Merr të gjitha shërbimet publike
-router.get("/services/public", async (req, res) => {
-  try {
-    const services = await Service.find().populate("departmentId", "name");
-    res.json(services);
-  } catch (err) {
-    res.status(500).json({ message: "Gabim gjatë marrjes së shërbimeve." });
-  }
-});
-// GET /api/clinic/doctors → mjekët e klinikës së kyçur
-router.get("/doctors", verifyToken, async (req, res) => {
-  if (req.user.role !== "clinic") {
-    return res.status(403).json({ message: "Vetëm klinikat kanë qasje." });
-  }
-
-  const doctors = await User.find({ clinicId: req.user.id, role: "doctor" }).select("name _id");
-  res.json(doctors);
-});
-// Përditëso emrin/emailin e mjekut
+// ✏️ Përditëso emrin/emailin e mjekut
 router.put("/users/:id", verifyToken, async (req, res) => {
-  if (req.user.role !== "clinic") {
-    return res.status(403).json({ message: "Vetëm klinikat mund të ndryshojnë të dhënat." });
-  }
-
   const { name, email } = req.body;
-
   try {
     const updated = await User.findByIdAndUpdate(
       req.params.id,
@@ -206,33 +196,35 @@ router.put("/users/:id", verifyToken, async (req, res) => {
     ).select("-password");
     res.json(updated);
   } catch (err) {
-    console.error("❌ Gabim gjatë përditësimit të mjekut:", err);
-    res.status(500).json({ message: "Gabim gjatë përditësimit të mjekut." });
+    console.error("❌ Gabim:", err);
+    res.status(500).json({ message: "Gabim gjatë përditësimit të të dhënave të mjekut." });
   }
 });
 
-// ✏️ PUT /api/clinic/update → Përditëso profilin e klinikës
+
+// =========================
+// 🏥 PROFILI I KLINIKËS
+// =========================
+
+// ✏️ Përditëso profilin e klinikës
 router.put("/update", verifyToken, async (req, res) => {
+  if (req.user.role !== "clinic") {
+    return res.status(403).json({ message: "Vetëm klinika mund të përditësojë këtë profil." });
+  }
+
+  const { name, email, password } = req.body;
+  const updateFields = {};
+
+  if (name) updateFields.name = name;
+  if (email) updateFields.email = email;
+  if (password) updateFields.password = await bcrypt.hash(password, 10);
+
   try {
-    if (req.user.role !== "clinic") {
-      return res.status(403).json({ message: "Vetëm klinika mund të përditësojë këtë profil." });
-    }
-
-    const { name, email, password } = req.body;
-    const updateFields = {};
-
-    if (name) updateFields.name = name;
-    if (email) updateFields.email = email;
-    if (password) {
-      const hashed = await bcrypt.hash(password, 10);
-      updateFields.password = hashed;
-    }
-
     const updated = await User.findByIdAndUpdate(req.user.id, updateFields, { new: true }).select("-password");
     res.json({ message: "Profili u përditësua me sukses!", clinic: updated });
   } catch (err) {
-    console.error("❌ Gabim gjatë përditësimit të klinikës:", err);
-    res.status(500).json({ message: "Gabim gjatë përditësimit." });
+    console.error("❌ Gabim:", err);
+    res.status(500).json({ message: "Gabim gjatë përditësimit të klinikës." });
   }
 });
 

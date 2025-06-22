@@ -15,23 +15,32 @@ export default function ClinicAddDoctor() {
 
   const [departments, setDepartments] = useState([]);
   const [clinicServices, setClinicServices] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
+    if (!token) return;
 
-    axios
-      .get(`${API}/clinic/departments`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((res) => setDepartments(res.data))
-      .catch((err) => console.error("❌ Gabim në departamente:", err));
+    const fetchData = async () => {
+      try {
+        const [depRes, srvRes] = await Promise.all([
+          axios.get(`${API}/clinic/departments`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          axios.get(`${API}/clinic/services`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
+        setDepartments(depRes.data);
+        setClinicServices(srvRes.data);
+      } catch (err) {
+        console.error("❌ Gabim gjatë marrjes së të dhënave:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    axios
-      .get(`${API}/clinic/services`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((res) => setClinicServices(res.data))
-      .catch((err) => console.error("❌ Gabim në shërbime:", err));
+    fetchData();
   }, []);
 
   const handleChange = (e) => {
@@ -75,97 +84,109 @@ export default function ClinicAddDoctor() {
   return (
     <div className="container py-5" style={{ maxWidth: "600px" }}>
       <h2 className="mb-4 text-success">➕ Shto Mjek të Ri</h2>
-      <form onSubmit={handleSubmit}>
-        {/* Emri */}
-        <div className="mb-3">
-          <label className="form-label">Emri i mjekut</label>
-          <input
-            name="name"
-            className="form-control"
-            placeholder="Dr. Emri Mbiemri"
-            value={formData.name}
-            onChange={handleChange}
-            required
-            autoComplete="off"
-          />
-        </div>
 
-        {/* Emaili */}
-        <div className="mb-3">
-          <label className="form-label">Emaili</label>
-          <input
-            name="email"
-            type="email"
-            className="form-control"
-            placeholder="email@shembull.com"
-            value={formData.email}
-            onChange={handleChange}
-            required
-            autoComplete="off"
-          />
-        </div>
-
-        {/* Fjalëkalimi */}
-        <div className="mb-3">
-          <label className="form-label">Fjalëkalimi</label>
-          <input
-            name="password"
-            type="password"
-            className="form-control"
-            placeholder="Fjalëkalimi"
-            value={formData.password}
-            onChange={handleChange}
-            required
-            autoComplete="new-password"
-          />
-        </div>
-
-        {/* Departamenti */}
-        <div className="mb-3">
-          <label className="form-label">Departamenti</label>
-          <select
-            name="departmentId"
-            className="form-select"
-            value={formData.departmentId}
-            onChange={handleChange}
-            required
-          >
-            <option value="">-- Zgjedh Departamentin --</option>
-            {departments.map((d) => (
-              <option key={d._id} value={d._id}>
-                {d.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Shërbimet */}
-        <div className="mb-4">
-          <label className="form-label">Shërbimet</label>
-          <div className="border rounded p-3" style={{ maxHeight: "200px", overflowY: "auto" }}>
-            {clinicServices.length === 0 && <p className="text-muted">Nuk ka shërbime të regjistruara.</p>}
-            {clinicServices.map((s) => (
-              <div className="form-check" key={s._id}>
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  id={`service-${s._id}`}
-                  checked={formData.services.includes(s._id)}
-                  onChange={() => handleServiceCheckboxChange(s._id)}
-                />
-                <label className="form-check-label" htmlFor={`service-${s._id}`}>
-                  {s.name} – {s.price}€
-                </label>
-              </div>
-            ))}
+      {loading ? (
+        <p>🔄 Duke ngarkuar të dhënat...</p>
+      ) : (
+        <form onSubmit={handleSubmit}>
+          {/* Emri */}
+          <div className="mb-3">
+            <label className="form-label">Emri i mjekut</label>
+            <input
+              name="name"
+              className="form-control"
+              placeholder="Dr. Emri Mbiemri"
+              value={formData.name}
+              onChange={handleChange}
+              required
+              autoComplete="off"
+            />
           </div>
-        </div>
 
-        {/* Submit */}
-        <button type="submit" className="btn btn-success w-100">
-          Shto Mjekun
-        </button>
-      </form>
+          {/* Emaili */}
+          <div className="mb-3">
+            <label className="form-label">Emaili</label>
+            <input
+              name="email"
+              type="email"
+              className="form-control"
+              placeholder="email@shembull.com"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              autoComplete="off"
+            />
+          </div>
+
+          {/* Fjalëkalimi */}
+          <div className="mb-3">
+            <label className="form-label">Fjalëkalimi</label>
+            <input
+              name="password"
+              type="password"
+              className="form-control"
+              placeholder="Fjalëkalimi"
+              value={formData.password}
+              onChange={handleChange}
+              required
+              autoComplete="new-password"
+            />
+          </div>
+
+          {/* Departamenti */}
+          <div className="mb-3">
+            <label className="form-label">Departamenti</label>
+            <select
+              name="departmentId"
+              className="form-select"
+              value={formData.departmentId}
+              onChange={handleChange}
+              required
+            >
+              <option value="">-- Zgjedh Departamentin --</option>
+              {departments.length === 0 ? (
+                <option disabled>Nuk ka departamente të regjistruara</option>
+              ) : (
+                departments.map((d) => (
+                  <option key={d._id} value={d._id}>
+                    {d.name}
+                  </option>
+                ))
+              )}
+            </select>
+          </div>
+
+          {/* Shërbimet */}
+          <div className="mb-4">
+            <label className="form-label">Shërbimet</label>
+            <div className="border rounded p-3" style={{ maxHeight: "200px", overflowY: "auto" }}>
+              {clinicServices.length === 0 ? (
+                <p className="text-muted">Nuk ka shërbime të regjistruara.</p>
+              ) : (
+                clinicServices.map((s) => (
+                  <div className="form-check" key={s._id}>
+                    <input
+                      className="form-check-input"
+                      type="checkbox"
+                      id={`service-${s._id}`}
+                      checked={formData.services.includes(s._id)}
+                      onChange={() => handleServiceCheckboxChange(s._id)}
+                    />
+                    <label className="form-check-label" htmlFor={`service-${s._id}`}>
+                      {s.name} – {s.price}€
+                    </label>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          {/* Submit */}
+          <button type="submit" className="btn btn-success w-100">
+            Shto Mjekun
+          </button>
+        </form>
+      )}
     </div>
   );
 }
