@@ -384,5 +384,20 @@ router.delete("/:id", verifyToken, async (req, res) => {
     res.status(500).json({ message: "Gabim në server." });
   }
 });
+// PUT /api/appointments/:id/presence
+router.put("/:id/presence", verifyToken, async (req, res) => {
+  try {
+    const { isPresent } = req.body;
+    const updated = await Appointment.findByIdAndUpdate(
+      req.params.id,
+      { isPresent },
+      { new: true }
+    );
+    res.json(updated);
+  } catch (err) {
+    res.status(500).json({ message: "Gabim gjatë ndryshimit të prezencës." });
+  }
+});
+
 
 module.exports = router;

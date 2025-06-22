@@ -28,6 +28,20 @@ export default function DoctorAppointments() {
     fetchAppointments();
   }, []);
 
+  const togglePresence = async (id, currentStatus) => {
+    const token = localStorage.getItem("token");
+    try {
+      await axios.put(
+        `https://medpal-aqpz.onrender.com/api/appointments/${id}/presence`,
+        { isPresent: !currentStatus },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      fetchAppointments();
+    } catch (err) {
+      console.error("❌ Gabim gjatë ndryshimit të prezencës:", err);
+    }
+  };
+
   const downloadPDF = async (id) => {
     const token = localStorage.getItem("token");
     try {
@@ -117,9 +131,12 @@ export default function DoctorAppointments() {
                 <td>{a.date}</td>
                 <td>{a.time}</td>
                 <td>
-                  <span className={`badge bg-${a.isPresent ? "success" : "secondary"}`}>
+                  <button
+                    className={`btn btn-sm btn-${a.isPresent ? "success" : "secondary"}`}
+                    onClick={() => togglePresence(a._id, a.isPresent)}
+                  >
                     {a.isPresent ? "Po" : "Jo"}
-                  </span>
+                  </button>
                 </td>
                 <td>
                   {a.documents?.length > 0 ? (
@@ -175,7 +192,6 @@ export default function DoctorAppointments() {
         </table>
       </div>
 
-      {/* Modal për ngarkim dokumenti */}
       <Modal
         isOpen={modalIsOpen}
         onRequestClose={() => setModalIsOpen(false)}
