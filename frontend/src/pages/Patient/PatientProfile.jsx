@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
+const API = import.meta.env.VITE_API_BASE_URL;
 
 export default function PatientProfile() {
   const [form, setForm] = useState({
@@ -17,7 +18,7 @@ export default function PatientProfile() {
   useEffect(() => {
     const fetchData = async () => {
       const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:5000/api/auth/me", {
+      const res = await axios.get("https://medpal-aqpz.onrender.com/api/auth/me", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setForm({ ...form, ...res.data });
@@ -33,7 +34,7 @@ export default function PatientProfile() {
     e.preventDefault();
     const token = localStorage.getItem("token");
     try {
-      await axios.put("http://localhost:5000/api/users/me", form, {
+      await axios.put("https://medpal-aqpz.onrender.com/api/users/me", form, {
         headers: { Authorization: `Bearer ${token}` },
       });
       alert("✅ Profili u përditësua me sukses!");

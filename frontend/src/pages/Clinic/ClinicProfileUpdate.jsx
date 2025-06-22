@@ -20,7 +20,7 @@ export default function ClinicProfileUpdate() {
     const token = localStorage.getItem("token");
 
     try {
-      const res = await axios.put("http://localhost:5000/api/clinic/update", form, {
+      const res = await axios.put("https://medpal-aqpz.onrender.com/api/clinic/update", form, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

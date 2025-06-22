@@ -1,6 +1,8 @@
 import { BrowserRouter as Router, Routes, Route, useNavigate } from "react-router-dom";
 import PrivateRoute from "./components/PrivateRoute";
 import 'bootstrap/dist/css/bootstrap.min.css';
+// App.jsx
+export const API = import.meta.env.VITE_API_BASE_URL;
 
 import WelcomePage from "./pages/WelcomePage";
 import Login from "./pages/Auth/Login";

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
+const API = import.meta.env.VITE_API_BASE_URL;
 
 export default function PatientReports() {
   const [reports, setReports] = useState([]);
@@ -9,7 +10,7 @@ export default function PatientReports() {
     const fetchReports = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("http://localhost:5000/api/reports/me", {
+        const res = await axios.get("https://medpal-aqpz.onrender.com/api/reports/me", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setReports(res.data);
@@ -24,7 +25,7 @@ export default function PatientReports() {
   const handleDownload = async (reportId) => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get(`http://localhost:5000/api/reports/${reportId}/pdf`, {
+      const res = await axios.get(`https://medpal-aqpz.onrender.com/api/reports/${reportId}/pdf`, {
         responseType: "blob",
         headers: { Authorization: `Bearer ${token}` },
       });

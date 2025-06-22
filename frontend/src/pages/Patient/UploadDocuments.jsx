@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
+const API = import.meta.env.VITE_API_BASE_URL;
 
 export default function UploadDocuments() {
   const [documents, setDocuments] = useState([]);
@@ -11,7 +12,7 @@ export default function UploadDocuments() {
   const fetchDocuments = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:5000/api/documents/mine", {
+      const res = await axios.get("https://medpal-aqpz.onrender.com/api/documents/mine", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setDocuments(res.data);
@@ -38,7 +39,7 @@ export default function UploadDocuments() {
 
     try {
       const token = localStorage.getItem("token");
-      await axios.post("http://localhost:5000/api/documents/upload", formData, {
+      await axios.post("https://medpal-aqpz.onrender.com/api/documents/upload", formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
@@ -106,7 +107,7 @@ export default function UploadDocuments() {
             <li key={doc._id} className="list-group-item d-flex justify-content-between align-items-center">
               <span>{doc.title}</span>
               <a
-                href={`http://localhost:5000${doc.fileUrl}`}
+                href={`https://medpal-aqpz.onrender.com${doc.fileUrl}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn btn-sm btn-outline-success"

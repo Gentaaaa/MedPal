@@ -19,7 +19,7 @@ export default function ClinicPatientReports() {
       if (filtrat.to) query.append("to", filtrat.to);
       if (filtrat.doctorId) query.append("doctorId", filtrat.doctorId);
 
-      const res = await axios.get(`http://localhost:5000/api/reports/clinic?${query.toString()}`, {
+      const res = await axios.get(`https://medpal-aqpz.onrender.com/api/reports/clinic?${query.toString()}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setRaportet(res.data);
@@ -31,7 +31,7 @@ export default function ClinicPatientReports() {
   const merrMjeket = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:5000/api/users/doctors", {
+      const res = await axios.get("https://medpal-aqpz.onrender.com/api/users/doctors", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setMjeket(res.data);
@@ -57,7 +57,7 @@ export default function ClinicPatientReports() {
   const shkarkoPDF = async (reportId) => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get(`http://localhost:5000/api/reports/${reportId}/pdf`, {
+      const res = await axios.get(`https://medpal-aqpz.onrender.com/api/reports/${reportId}/pdf`, {
         responseType: "blob",
         headers: { Authorization: `Bearer ${token}` },
       });

@@ -11,7 +11,7 @@ export default function DoctorProfile() {
 
     // 🔹 Merr të dhënat e mjekut
     axios
-      .get("http://localhost:5000/api/auth/me", {
+      .get("https://medpal-aqpz.onrender.com/api/auth/me", {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => setDoctor(res.data))
@@ -21,7 +21,7 @@ export default function DoctorProfile() {
 
     // 🔹 Merr orarin e punës
     axios
-      .get("http://localhost:5000/api/working-hours/me", {
+      .get("https://medpal-aqpz.onrender.com/api/working-hours/me", {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => {

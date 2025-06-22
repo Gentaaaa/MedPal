@@ -16,7 +16,7 @@ export default function ClinicAppointments() {
   const fetchAppointments = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:5000/api/appointments/all", {
+      const res = await axios.get("https://medpal-aqpz.onrender.com/api/appointments/all", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setAppointments(res.data);
@@ -30,7 +30,7 @@ export default function ClinicAppointments() {
     try {
       const token = localStorage.getItem("token");
       await axios.put(
-        `http://localhost:5000/api/appointments/${appointmentId}/status`,
+        `https://medpal-aqpz.onrender.com/api/appointments/${appointmentId}/status`,
         { status },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -43,7 +43,7 @@ export default function ClinicAppointments() {
   const downloadPDF = async (appointmentId) => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get(`http://localhost:5000/api/appointments/${appointmentId}/pdf`, {
+      const res = await axios.get(`https://medpal-aqpz.onrender.com/api/appointments/${appointmentId}/pdf`, {
         headers: { Authorization: `Bearer ${token}` },
         responseType: "blob",
       });
@@ -79,7 +79,7 @@ export default function ClinicAppointments() {
   };
 
   const openModal = (fileUrl) => {
-    setSelectedDocUrl("http://localhost:5000" + fileUrl);
+    setSelectedDocUrl("https://medpal-aqpz.onrender.com" + fileUrl);
     setModalIsOpen(true);
   };
 

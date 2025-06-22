@@ -22,10 +22,10 @@ export default function ClinicServicesAndDepartments() {
   const fetchData = async () => {
     try {
       const [depRes, servRes] = await Promise.all([
-        axios.get("http://localhost:5000/api/clinic/departments", {
+        axios.get("https://medpal-aqpz.onrender.com/api/clinic/departments", {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        axios.get("http://localhost:5000/api/clinic/services", {
+        axios.get("https://medpal-aqpz.onrender.com/api/clinic/services", {
           headers: { Authorization: `Bearer ${token}` },
         }),
       ]);
@@ -45,7 +45,7 @@ export default function ClinicServicesAndDepartments() {
     if (!departmentName.trim()) return alert("Shkruani emrin e departamentit.");
     try {
       await axios.post(
-        "http://localhost:5000/api/clinic/departments",
+        "https://medpal-aqpz.onrender.com/api/clinic/departments",
         { name: departmentName },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -60,7 +60,7 @@ export default function ClinicServicesAndDepartments() {
   const handleDeleteDepartment = async (id) => {
     if (!window.confirm("A jeni i sigurt që doni ta fshini këtë departament?")) return;
     try {
-      await axios.delete(`http://localhost:5000/api/clinic/departments/${id}`, {
+      await axios.delete(`https://medpal-aqpz.onrender.com/api/clinic/departments/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchData();
@@ -88,14 +88,14 @@ export default function ClinicServicesAndDepartments() {
     try {
       if (editingService) {
         await axios.put(
-          `http://localhost:5000/api/clinic/services/${editingService}`,
+          `https://medpal-aqpz.onrender.com/api/clinic/services/${editingService}`,
           { name, price, departmentId },
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setEditingService(null);
       } else {
         await axios.post(
-          "http://localhost:5000/api/clinic/services",
+          "https://medpal-aqpz.onrender.com/api/clinic/services",
           { name, price, departmentId },
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -120,7 +120,7 @@ export default function ClinicServicesAndDepartments() {
   const handleDeleteService = async (id) => {
     if (!window.confirm("A jeni i sigurt që doni ta fshini këtë shërbim?")) return;
     try {
-      await axios.delete(`http://localhost:5000/api/clinic/services/${id}`, {
+      await axios.delete(`https://medpal-aqpz.onrender.com/api/clinic/services/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchData();

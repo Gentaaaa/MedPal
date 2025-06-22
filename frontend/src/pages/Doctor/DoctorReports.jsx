@@ -10,7 +10,7 @@ export default function DoctorReports() {
     const fetchReports = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("http://localhost:5000/api/reports/doctor", {
+        const res = await axios.get("https://medpal-aqpz.onrender.com/api/reports/doctor", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setReports(res.data);
@@ -27,7 +27,7 @@ export default function DoctorReports() {
   const handleDownload = async (reportId) => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get(`http://localhost:5000/api/reports/${reportId}/pdf`, {
+      const res = await axios.get(`https://medpal-aqpz.onrender.com/api/reports/${reportId}/pdf`, {
         responseType: "blob",
         headers: { Authorization: `Bearer ${token}` },
       });

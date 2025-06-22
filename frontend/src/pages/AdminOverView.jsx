@@ -9,7 +9,7 @@ export default function AdminOverview() {
     const fetchOverview = async () => {
       try {
         const token = localStorage.getItem("token"); // ose adminToken, varësisht si e ruan
-        const res = await axios.get("http://localhost:5000/api/admin/overview", {
+        const res = await axios.get("https://medpal-aqpz.onrender.com/api/admin/overview", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setStats(res.data);

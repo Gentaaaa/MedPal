@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 
+const API = import.meta.env.VITE_API_BASE_URL;
+
 export default function Register() {
   const [formData, setFormData] = useState({
     name: "",
@@ -19,12 +21,13 @@ export default function Register() {
 
   const navigate = useNavigate();
 
-  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = (e) =>
+    setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/register", formData);
+      const res = await axios.post(`${API}/api/auth/register`, formData);
       if (formData.role === "patient" && res.data.message.includes("Verifikoni")) {
         setVerificationStep(true);
       } else {
@@ -39,7 +42,7 @@ export default function Register() {
   const verifyCode = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/verify-email", {
+      const res = await axios.post(`${API}/api/auth/verify-email`, {
         email: formData.email,
         code: verificationCode,
       });
@@ -52,7 +55,7 @@ export default function Register() {
 
   const resendCode = async () => {
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/resend-verification", {
+      const res = await axios.post(`${API}/api/auth/resend-verification`, {
         email: formData.email,
       });
       setResendMessage("📧 " + res.data.message);

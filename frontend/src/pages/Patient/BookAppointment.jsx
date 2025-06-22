@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
+const API = import.meta.env.VITE_API_BASE_URL;
+
 
 export default function BookAppointment() {
   const [form, setForm] = useState({
@@ -23,7 +25,7 @@ export default function BookAppointment() {
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/doctors/public");
+        const res = await axios.get("https://medpal-aqpz.onrender.com/api/doctors/public");
         setDoctors(res.data);
       } catch (err) {
         console.error("❌ Gabim në marrjen e mjekëve:", err);
@@ -36,8 +38,8 @@ export default function BookAppointment() {
     setLoadingServices(true);
     try {
       const [servicesRes, hoursRes] = await Promise.all([
-        axios.get(`http://localhost:5000/api/doctors/${doctorId}/services`), // Vetëm shërbimet e doktorit
-        axios.get(`http://localhost:5000/api/working-hours/${doctorId}`),
+        axios.get(`https://medpal-aqpz.onrender.com/api/doctors/${doctorId}/services`), // Vetëm shërbimet e doktorit
+        axios.get(`https://medpal-aqpz.onrender.com/api/working-hours/${doctorId}`),
       ]);
       setServices(servicesRes.data);
       setWorkingHours(hoursRes.data);
@@ -53,7 +55,7 @@ export default function BookAppointment() {
   const fetchTakenTimes = async (doctorId, date) => {
     try {
       const res = await axios.get(
-        `http://localhost:5000/api/appointments/taken?doctorId=${doctorId}&date=${date}`
+        `https://medpal-aqpz.onrender.com/api/appointments/taken?doctorId=${doctorId}&date=${date}`
       );
       setTakenTimes(res.data);
     } catch (err) {
@@ -120,7 +122,7 @@ export default function BookAppointment() {
     }
 
     try {
-      await axios.post("http://localhost:5000/api/appointments", form, {
+      await axios.post("https://medpal-aqpz.onrender.com/api/appointments", form, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

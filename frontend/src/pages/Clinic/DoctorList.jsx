@@ -22,7 +22,7 @@ export default function DoctorList() {
   const fetchDoctors = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:5000/api/clinic/doctors", {
+      const res = await axios.get("https://medpal-aqpz.onrender.com/api/clinic/doctors", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setDoctors(res.data);
@@ -34,7 +34,7 @@ export default function DoctorList() {
   const fetchDepartments = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:5000/api/clinic/departments", {
+      const res = await axios.get("https://medpal-aqpz.onrender.com/api/clinic/departments", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setDepartments(res.data);
@@ -46,7 +46,7 @@ export default function DoctorList() {
   const fetchServices = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:5000/api/clinic/services", {
+      const res = await axios.get("https://medpal-aqpz.onrender.com/api/clinic/services", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setClinicServices(res.data);
@@ -59,7 +59,7 @@ export default function DoctorList() {
     if (!window.confirm("A jeni të sigurt që doni ta fshini mjekun?")) return;
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(`http://localhost:5000/api/clinic/doctors/${id}`, {
+      await axios.delete(`https://medpal-aqpz.onrender.com/api/clinic/doctors/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchDoctors();
@@ -90,14 +90,14 @@ export default function DoctorList() {
 
       // Emri & emaili
       await axios.put(
-        `http://localhost:5000/api/clinic/users/${id}`,
+        `https://medpal-aqpz.onrender.com/api/clinic/users/${id}`,
         { name: editedName, email: editedEmail },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
       // Departamenti & shërbimet
       await axios.put(
-        `http://localhost:5000/api/clinic/doctors/${id}`,
+        `https://medpal-aqpz.onrender.com/api/clinic/doctors/${id}`,
         { departmentId: editedDepartmentId, services: editedServices },
         { headers: { Authorization: `Bearer ${token}` } }
       );

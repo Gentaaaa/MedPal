@@ -20,7 +20,7 @@ export default function AddVisitReport() {
     (async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("http://localhost:5000/api/appointments/doctor", {
+        const res = await axios.get("https://medpal-aqpz.onrender.com/api/appointments/doctor", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setAppointments(res.data.filter(a => a.status === "approved"));
@@ -40,7 +40,7 @@ export default function AddVisitReport() {
     setMessage({ text: "", type: "" });
     try {
       const token = localStorage.getItem("token");
-      await axios.post("http://localhost:5000/api/reports", form, {
+      await axios.post("https://medpal-aqpz.onrender.com/api/reports", form, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setMessage({ text: "✅ Raporti u ruajt me sukses!", type: "success" });

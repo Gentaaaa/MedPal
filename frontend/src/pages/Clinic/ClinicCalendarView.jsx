@@ -12,7 +12,7 @@ export default function ClinicCalendarView() {
     const fetchAppointments = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("http://localhost:5000/api/appointments/all", {
+        const res = await axios.get("https://medpal-aqpz.onrender.com/api/appointments/all", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setAppointments(res.data);

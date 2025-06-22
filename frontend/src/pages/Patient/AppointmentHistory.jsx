@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
+const API = import.meta.env.VITE_API_BASE_URL;
+
 
 export default function AppointmentHistory() {
   const [appointments, setAppointments] = useState([]);
@@ -9,7 +11,7 @@ export default function AppointmentHistory() {
     const fetchAppointments = async () => {
       const token = localStorage.getItem("token");
       try {
-        const res = await axios.get("http://localhost:5000/api/appointments/mine", {
+        const res = await axios.get("https://medpal-aqpz.onrender.com/api/appointments/mine", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setAppointments(res.data);

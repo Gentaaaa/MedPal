@@ -25,7 +25,7 @@ const InvitePatient = () => {
     try {
       const token = localStorage.getItem("token"); // JWT i klinikës
       const response = await axios.post(
-        "http://localhost:5000/api/auth/invite-patient",
+        "https://medpal-aqpz.onrender.com/api/auth/invite-patient",
         formData,
         {
           headers: {

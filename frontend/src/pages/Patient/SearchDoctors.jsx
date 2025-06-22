@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
+const API = import.meta.env.VITE_API_BASE_URL;
 
 export default function SearchDoctors() {
   const [doctors, setDoctors] = useState([]);
@@ -16,8 +17,8 @@ export default function SearchDoctors() {
   useEffect(() => {
     const fetchFilters = async () => {
       const [depRes, servRes] = await Promise.all([
-        axios.get("http://localhost:5000/api/departments"),
-        axios.get("http://localhost:5000/api/services"),
+        axios.get("https://medpal-aqpz.onrender.com/api/departments"),
+        axios.get("https://medpal-aqpz.onrender.com/api/services"),
       ]);
       setDepartments(depRes.data);
       setServices(servRes.data);
@@ -27,7 +28,7 @@ export default function SearchDoctors() {
 
   const handleSearch = async () => {
     const params = new URLSearchParams(filters).toString();
-    const res = await axios.get(`http://localhost:5000/api/doctors/search?${params}`);
+    const res = await axios.get(`https://medpal-aqpz.onrender.com/api/doctors/search?${params}`);
     setDoctors(res.data);
   };
 

@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
+const API = import.meta.env.VITE_API_BASE_URL;
+
 
 export default function ClinicAddDoctor() {
   const [formData, setFormData] = useState({
@@ -18,20 +20,19 @@ export default function ClinicAddDoctor() {
     const token = localStorage.getItem("token");
 
     axios
-      .get("http://localhost:5000/api/clinic/departments", {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((res) => setDepartments(res.data))
-      .catch((err) => console.error("❌ Gabim në departamente:", err));
+  .get("https://medpal-aqpz.onrender.com/api/clinic/departments", {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  .then((res) => setDepartments(res.data))
+  .catch((err) => console.error("❌ Gabim në departamente:", err));
 
     axios
-      .get("http://localhost:5000/api/clinic/services", {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((res) => setClinicServices(res.data))
-      .catch((err) => console.error("❌ Gabim në shërbime:", err));
+  .get("https://medpal-aqpz.onrender.com/api/clinic/services", {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  .then((res) => setClinicServices(res.data))
+  .catch((err) => console.error("❌ Gabim në shërbime:", err));
   }, []);
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -52,9 +53,10 @@ export default function ClinicAddDoctor() {
     const token = localStorage.getItem("token");
 
     try {
-      await axios.post("http://localhost:5000/api/auth/register-doctor", formData, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await axios.post("https://medpal-aqpz.onrender.com/api/auth/register-doctor", formData, {
+  headers: { Authorization: `Bearer ${token}` },
+});
+
 
       alert("👨‍⚕️ Mjeku u shtua me sukses!");
       setFormData({
@@ -161,3 +163,4 @@ export default function ClinicAddDoctor() {
     </div>
   );
 }
+

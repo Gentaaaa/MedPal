@@ -24,7 +24,7 @@ export default function UserGrowthChart() {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("http://localhost:5000/api/admin/stats/monthly-users", {
+        const res = await axios.get("https://medpal-aqpz.onrender.com/api/admin/stats/monthly-users", {
           headers: { Authorization: `Bearer ${token}` },
         });
 

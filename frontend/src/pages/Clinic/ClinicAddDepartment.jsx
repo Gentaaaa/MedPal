@@ -1,6 +1,7 @@
 // src/pages/Clinic/ClinicAddDepartment.jsx
 import { useState, useEffect } from "react";
 import axios from "axios";
+const API = import.meta.env.VITE_API_BASE_URL;
 
 export default function ClinicAddDepartment() {
   const [name, setName] = useState("");
@@ -10,9 +11,10 @@ export default function ClinicAddDepartment() {
   useEffect(() => {
     const fetchDepartments = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/clinic/departments", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/clinic/departments`, {
+  headers: { Authorization: `Bearer ${token}` },
+});
+
         setDepartments(res.data);
       } catch (err) {
         console.error("❌ Gabim në marrjen e departamenteve:", err);
@@ -28,16 +30,16 @@ export default function ClinicAddDepartment() {
 
     try {
       await axios.post(
-        "http://localhost:5000/api/clinic/departments",
-        { name },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+  `${process.env.REACT_APP_API_BASE_URL}/api/clinic/departments`,
+  { name },
+  { headers: { Authorization: `Bearer ${token}` } }
+);
       setName("");
       alert("✅ Departamenti u shtua me sukses!");
       // Rifresko listën
-      const res = await axios.get("http://localhost:5000/api/clinic/departments", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/clinic/departments`, {
+  headers: { Authorization: `Bearer ${token}` },
+});
       setDepartments(res.data);
     } catch (err) {
       console.error("❌ Gabim:", err);

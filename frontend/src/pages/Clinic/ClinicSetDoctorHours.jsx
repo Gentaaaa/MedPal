@@ -17,7 +17,7 @@ export default function ClinicSetDoctorHours() {
   useEffect(() => {
     const token = localStorage.getItem("token");
     axios
-      .get("http://localhost:5000/api/clinic/doctors", {
+      .get("https://medpal-aqpz.onrender.com/api/clinic/doctors", {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => setDoctors(res.data))
@@ -37,7 +37,7 @@ export default function ClinicSetDoctorHours() {
 
     try {
       await axios.post(
-        `http://localhost:5000/api/working-hours/${selectedDoctor}`,
+        `https://medpal-aqpz.onrender.com/api/working-hours/${selectedDoctor}`,
         { workingHours },
         { headers: { Authorization: `Bearer ${token}` } }
       );

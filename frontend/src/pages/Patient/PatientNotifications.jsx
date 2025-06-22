@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
+const API = import.meta.env.VITE_API_BASE_URL;
 
 export default function PatientNotifications() {
   const [appointments, setAppointments] = useState([]);
@@ -9,13 +10,13 @@ export default function PatientNotifications() {
     const fetchAppointments = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("http://localhost:5000/api/appointments/mine", {
+        const res = await axios.get("https://medpal-aqpz.onrender.com/api/appointments/mine", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setAppointments(res.data);
 
         // Marko njoftimet si të lexuara
-        await axios.put("http://localhost:5000/api/appointments/mark-seen", {}, {
+        await axios.put("https://medpal-aqpz.onrender.com/api/appointments/mark-seen", {}, {
           headers: { Authorization: `Bearer ${token}` },
         });
       } catch (err) {

@@ -15,7 +15,7 @@ export default function DoctorAppointments() {
   const fetchAppointments = async () => {
     const token = localStorage.getItem("token");
     try {
-      const res = await axios.get("http://localhost:5000/api/appointments/doctor", {
+      const res = await axios.get("https://medpal-aqpz.onrender.com/api/appointments/doctor", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setAppointments(res.data);
@@ -28,7 +28,7 @@ export default function DoctorAppointments() {
 
   const updateStatus = async (id, status) => {
     const token = localStorage.getItem("token");
-    await axios.put(`http://localhost:5000/api/appointments/${id}/status`, { status }, {
+    await axios.put(`https://medpal-aqpz.onrender.com/api/appointments/${id}/status`, { status }, {
       headers: { Authorization: `Bearer ${token}` },
     });
     fetchAppointments();
@@ -36,7 +36,7 @@ export default function DoctorAppointments() {
 
   const downloadPDF = async (id) => {
     const token = localStorage.getItem("token");
-    const res = await axios.get(`http://localhost:5000/api/appointments/${id}/pdf`, {
+    const res = await axios.get(`https://medpal-aqpz.onrender.com/api/appointments/${id}/pdf`, {
       headers: { Authorization: `Bearer ${token}` },
       responseType: "blob",
     });
@@ -62,7 +62,7 @@ export default function DoctorAppointments() {
     formData.append("file", file);
 
     const token = localStorage.getItem("token");
-    await axios.post(`http://localhost:5000/api/documents/upload/${selectedId}`, formData, {
+    await axios.post(`https://medpal-aqpz.onrender.com/api/documents/upload/${selectedId}`, formData, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -93,7 +93,7 @@ export default function DoctorAppointments() {
                 {a.documents?.length > 0 ?
                   a.documents.map((d, i) => (
                     <p key={i}>
-                      <a href={`http://localhost:5000${d.fileUrl}`} target="_blank" rel="noreferrer">
+                      <a href={`https://medpal-aqpz.onrender.com${d.fileUrl}`} target="_blank" rel="noreferrer">
                         📎 {d.title}
                       </a>
                     </p>

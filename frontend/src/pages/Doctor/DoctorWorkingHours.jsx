@@ -12,7 +12,7 @@ export default function DoctorWorkingHours() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/working-hours/me", {
+      .get("https://medpal-aqpz.onrender.com/api/working-hours/me", {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => {
@@ -39,7 +39,7 @@ export default function DoctorWorkingHours() {
 
     try {
       await axios.post(
-        "http://localhost:5000/api/working-hours",
+        "https://medpal-aqpz.onrender.com/api/working-hours",
         { days, startTime, endTime },
         {
           headers: { Authorization: `Bearer ${token}` },
