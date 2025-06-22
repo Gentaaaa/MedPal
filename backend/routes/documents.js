@@ -1,11 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const multer = require("multer");
-const path = require("path");
 const verifyToken = require("../middleware/verifyToken");
 const Document = require("../models/Document");
 const Appointment = require("../models/Appointment");
 
+// ✅ Konfigurimi për ngarkimin e dokumenteve me multer
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "uploads/");
@@ -18,7 +18,10 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// 📥 GET /api/documents/mine
+/* ============================
+   📄 GET /api/documents/mine
+   Kthen dokumentet e pacientit të kyçur
+============================ */
 router.get("/mine", verifyToken, async (req, res) => {
   try {
     const documents = await Document.find({ patientId: req.user.id });
@@ -28,7 +31,10 @@ router.get("/mine", verifyToken, async (req, res) => {
   }
 });
 
-// 📤 POST /api/documents/upload/:appointmentId
+/* ============================
+   📤 POST /api/documents/upload/:appointmentId
+   Upload dokumenti me ID të terminit (nga doktor ose pacient)
+============================ */
 router.post("/upload/:appointmentId", verifyToken, upload.single("file"), async (req, res) => {
   try {
     const { title } = req.body;
@@ -54,55 +60,28 @@ router.post("/upload/:appointmentId", verifyToken, upload.single("file"), async 
     res.status(500).json({ message: "Gabim gjatë ngarkimit." });
   }
 });
-// 📤 POST /api/documents/upload (pa appointmentId në URL)
+
+/* ============================
+   📤 POST /api/documents/upload
+   Upload dokument pa termin (vetëm pacienti)
+============================ */
 router.post("/upload", verifyToken, upload.single("file"), async (req, res) => {
   try {
     const { title } = req.body;
     const fileUrl = "/uploads/" + req.file.filename;
 
-    // Gjejmë takimin e fundit të pacientit
-    const lastAppointment = await Appointment.findOne({
-      patientId: req.user.id,
-      status: "approved",
-    }).sort({ date: -1 });
-
-    if (!lastAppointment) {
-      return res.status(404).json({ message: "Nuk u gjet asnjë takim." });
-    }
-
-    const document = new Document({
+    const doc = new Document({
       title,
       fileUrl,
       patientId: req.user.id,
-      appointmentId: lastAppointment._id,
-      doctorId: lastAppointment.doctorId,
     });
 
-    await document.save();
-
-    await Appointment.findByIdAndUpdate(lastAppointment._id, {
-      $push: { documents: document._id },
-    });
-
-    res.status(201).json({ message: "Dokumenti u ngarkua me sukses", document });
+    await doc.save();
+    res.status(201).json({ message: "Dokumenti u ngarkua me sukses", document: doc });
   } catch (err) {
     console.error("❌ Error uploading document:", err);
     res.status(500).json({ message: "Gabim gjatë ngarkimit." });
   }
-});
-// routes/documents.js
-router.post("/upload", verifyToken, upload.single("file"), async (req, res) => {
-  const { title } = req.body;
-  const fileUrl = "/uploads/" + req.file.filename;
-
-  const doc = new Document({
-    title,
-    fileUrl,
-    patientId: req.user.id,
-  });
-
-  await doc.save();
-  res.status(201).json({ message: "Dokumenti u ngarkua me sukses", document: doc });
 });
 
 module.exports = router;
