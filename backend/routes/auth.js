@@ -187,6 +187,56 @@ router.post("/resend-verification", async (req, res) => {
   }
 });
 
+// REGISTER DOCTOR - only by clinic
+router.post("/register-doctor", verifyToken, async (req, res) => {
+  try {
+    if (req.user.role !== "clinic") {
+      return res.status(403).json({ message: "Vetëm klinika mund të regjistrojë mjekë." });
+    }
+
+    const { name, email, password, departmentId, services } = req.body;
+
+    if (!name || !email || !password || !departmentId) {
+      return res.status(400).json({ message: "Të gjitha fushat janë të detyrueshme." });
+    }
+
+    const exists = await User.findOne({ email });
+    if (exists) {
+      return res.status(400).json({ message: "Emaili ekziston tashmë." });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const doctorCode = "DR" + crypto.randomBytes(3).toString("hex").toUpperCase();
+
+    const newDoctor = new User({
+      name,
+      email,
+      password: hashedPassword,
+      role: "doctor",
+      clinicId: req.user.id,
+      departmentId,
+      services,
+      doctorCode,
+      isVerified: true,
+    });
+
+    await newDoctor.save();
+
+    await sendDoctorWelcomeEmail(email, doctorCode, password);
+
+    res.status(201).json({
+      message: "✅ Mjeku u regjistrua me sukses!",
+      doctor: {
+        name: newDoctor.name,
+        email: newDoctor.email,
+        doctorCode: newDoctor.doctorCode,
+      },
+    });
+  } catch (err) {
+    console.error("❌ Gabim në regjistrimin e mjekut:", err);
+    res.status(500).json({ message: "Gabim gjatë regjistrimit të mjekut." });
+  }
+});
 
 // LOGIN DOCTOR me doctorCode
 router.post("/login-doctor", async (req, res) => {
@@ -405,6 +455,5 @@ router.get("/stats", verifyToken, checkRole("admin"), async (req, res) => {
     res.status(500).json({ message: "Gabim serveri" });
   }
 });
-
 
 module.exports = router;

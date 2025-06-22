@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
-
 const API = import.meta.env.VITE_API_BASE_URL;
+
 
 export default function ClinicAddDoctor() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    password: "",
     departmentId: "",
     services: [],
   });
@@ -19,20 +20,19 @@ export default function ClinicAddDoctor() {
     const token = localStorage.getItem("token");
 
     axios
-      .get(`${API}/clinic/departments`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((res) => setDepartments(res.data))
-      .catch((err) => console.error("❌ Gabim në departamente:", err));
+  .get("https://medpal-aqpz.onrender.com/api/clinic/departments", {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  .then((res) => setDepartments(res.data))
+  .catch((err) => console.error("❌ Gabim në departamente:", err));
 
     axios
-      .get(`${API}/clinic/services`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((res) => setClinicServices(res.data))
-      .catch((err) => console.error("❌ Gabim në shërbime:", err));
+  .get("https://medpal-aqpz.onrender.com/api/clinic/services", {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  .then((res) => setClinicServices(res.data))
+  .catch((err) => console.error("❌ Gabim në shërbime:", err));
   }, []);
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -53,14 +53,16 @@ export default function ClinicAddDoctor() {
     const token = localStorage.getItem("token");
 
     try {
-      await axios.post(`${API}/users/register-doctor`, formData, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await axios.post("https://medpal-aqpz.onrender.com/api/auth/register-doctor", formData, {
+  headers: { Authorization: `Bearer ${token}` },
+});
+
 
       alert("👨‍⚕️ Mjeku u shtua me sukses!");
       setFormData({
         name: "",
         email: "",
+        password: "",
         departmentId: "",
         services: [],
       });
@@ -98,6 +100,20 @@ export default function ClinicAddDoctor() {
             onChange={handleChange}
             required
             autoComplete="off"
+          />
+        </div>
+
+        <div className="mb-3">
+          <label className="form-label">Fjalëkalimi</label>
+          <input
+            name="password"
+            type="password"
+            className="form-control"
+            placeholder="Fjalëkalimi"
+            value={formData.password}
+            onChange={handleChange}
+            required
+            autoComplete="new-password"
           />
         </div>
 
@@ -147,3 +163,4 @@ export default function ClinicAddDoctor() {
     </div>
   );
 }
+
