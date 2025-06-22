@@ -5,7 +5,7 @@ const crypto = require("crypto");
 
 const verifyToken = require("../middleware/verifyToken");
 const User = require("../models/User");
-const sendVerificationEmail = require("../utils/sendEmail");
+const { sendDoctorWelcomeEmail } = require("../utils/sendEmail");
 
 // 📥 Merr të dhënat e profilit të kyçur
 router.get("/me", verifyToken, async (req, res) => {
@@ -18,8 +18,6 @@ router.get("/me", verifyToken, async (req, res) => {
   }
 });
 
-// 🔁 Përditëso profilin
-// 🔁 Përditëso profilin (me të gjitha fushat e pacientit)
 // 🔁 Përditëso profilin
 router.put("/me", verifyToken, async (req, res) => {
   try {
@@ -77,7 +75,7 @@ router.post("/register-doctor", verifyToken, async (req, res) => {
       return res.status(403).json({ message: "Vetëm klinikat mund të regjistrojnë mjekë." });
     }
 
-    const { name, email, departmentId } = req.body;
+    const { name, email, departmentId, services } = req.body;
 
     if (!name || !email) {
       return res.status(400).json({ message: "Emri dhe emaili janë të detyrueshëm." });
@@ -88,8 +86,10 @@ router.post("/register-doctor", verifyToken, async (req, res) => {
       return res.status(400).json({ message: "Ky email është tashmë i përdorur." });
     }
 
-    const generatedPassword = crypto.randomBytes(4).toString("hex"); // shembull: ab34cd78
+    const generatedPassword = crypto.randomBytes(4).toString("hex");
     const hashedPassword = await bcrypt.hash(generatedPassword, 10);
+
+    const doctorCode = "DR" + crypto.randomBytes(3).toString("hex").toUpperCase();
 
     const newDoctor = new User({
       name,
@@ -99,36 +99,25 @@ router.post("/register-doctor", verifyToken, async (req, res) => {
       isVerified: true,
       clinicId: req.user.id,
       departmentId: departmentId || null,
+      services: services || [],
+      doctorCode,
     });
 
     await newDoctor.save();
 
-    // 📧 Dërgo email me kredencialet për login
+    // 📧 Dërgo email me kredencialet
     try {
-      await sendVerificationEmail(
-        email,
-        `
-        <p>Përshëndetje ${name},</p>
-        <p>Ju jeni shtuar si mjek në MedPal nga klinika.</p>
-        <p>Kredencialet tuaja janë:</p>
-        <ul>
-          <li><strong>Email:</strong> ${email}</li>
-          <li><strong>Fjalëkalimi:</strong> ${generatedPassword}</li>
-        </ul>
-        <p>Kyçuni dhe ndryshoni fjalëkalimin nëse dëshironi.</p>
-        `
-      );
+      await sendDoctorWelcomeEmail(email, name, generatedPassword, doctorCode);
     } catch (err) {
       console.warn("⚠️ Emaili nuk u dërgua:", err.message);
     }
 
-    res.status(201).json({ message: "Mjeku u regjistrua me sukses." });
+    res.status(201).json({ message: "👨‍⚕️ Mjeku u regjistrua me sukses." });
   } catch (err) {
     console.error("❌ Gabim gjatë regjistrimit të mjekut:", err);
     res.status(500).json({ message: "Gabim gjatë regjistrimit të mjekut." });
   }
 });
-
 
 // 🔑 Ndrysho fjalëkalimin e përdoruesit
 router.put("/me/password", verifyToken, async (req, res) => {
@@ -154,6 +143,7 @@ router.put("/me/password", verifyToken, async (req, res) => {
     res.status(500).json({ message: "Gabim gjatë ndryshimit të fjalëkalimit." });
   }
 });
+
 // ❌ Fshi llogarinë e përdoruesit
 router.delete("/me", verifyToken, async (req, res) => {
   try {
@@ -163,6 +153,5 @@ router.delete("/me", verifyToken, async (req, res) => {
     res.status(500).json({ message: "Gabim gjatë fshirjes së llogarisë." });
   }
 });
-
 
 module.exports = router;
