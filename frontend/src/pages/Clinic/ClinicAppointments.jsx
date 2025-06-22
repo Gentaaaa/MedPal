@@ -25,6 +25,10 @@ export default function ClinicAppointments() {
     }
   };
 
+  useEffect(() => {
+    fetchAppointments();
+  }, []);
+
   const updateStatus = async (appointmentId, status) => {
     if (!window.confirm(`A dëshironi të ${status === "approved" ? "aprovoni" : "anuloni"} këtë termin?`)) return;
     try {
@@ -37,6 +41,19 @@ export default function ClinicAppointments() {
       fetchAppointments();
     } catch (err) {
       console.error("❌ Gabim gjatë përditësimit të statusit:", err);
+    }
+  };
+
+  const deleteAppointment = async (id) => {
+    if (!window.confirm("A jeni të sigurt që doni ta fshini këtë termin?")) return;
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`https://medpal-aqpz.onrender.com/api/appointments/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      fetchAppointments();
+    } catch (err) {
+      console.error("❌ Gabim gjatë fshirjes së terminit:", err);
     }
   };
 
@@ -67,7 +84,7 @@ export default function ClinicAppointments() {
       Ora: a.time,
       Doktori: a.doctorId?.name || "",
       Statusi: a.status,
-      Pjesëmarrja: a.attended ? "Po" : "Jo",
+      Prezent: a.isPresent ? "Po" : "Jo",
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(dataToExport);
@@ -83,10 +100,6 @@ export default function ClinicAppointments() {
     setSelectedDocUrl("https://medpal-aqpz.onrender.com" + fileUrl);
     setModalIsOpen(true);
   };
-
-  useEffect(() => {
-    fetchAppointments();
-  }, []);
 
   const filteredAppointments = appointments.filter((a) => {
     const query = searchTerm.toLowerCase();
@@ -127,10 +140,11 @@ export default function ClinicAppointments() {
                 <th>Data</th>
                 <th>Ora</th>
                 <th>Doktori</th>
+                <th>Prezent</th>
                 <th>Dokumente</th>
                 <th>Statusi</th>
-                <th>Pjesëmarrja</th>
                 <th>Raport</th>
+                <th>🗑️</th>
               </tr>
             </thead>
             <tbody>
@@ -142,12 +156,17 @@ export default function ClinicAppointments() {
                   <td>{a.time}</td>
                   <td>{a.doctorId?.name || "-"}</td>
                   <td>
+                    <span className={`badge bg-${a.isPresent ? "success" : "secondary"}`}>
+                      {a.isPresent ? "Po" : "Jo"}
+                    </span>
+                  </td>
+                  <td>
                     {a.documents && a.documents.length > 0 ? (
-                      <ul>
+                      <ul className="mb-0">
                         {a.documents.map((doc, i) => (
                           <li key={i}>
                             <button
-                              className="btn btn-link p-0"
+                              className="btn btn-link p-0 text-primary"
                               onClick={() => openModal(doc.fileUrl)}
                             >
                               📎 {doc.title}
@@ -163,10 +182,10 @@ export default function ClinicAppointments() {
                     {a.status === "pending" ? (
                       <>
                         <button className="btn btn-success btn-sm me-2" onClick={() => updateStatus(a._id, "approved")}>
-                          ✅ Aprovo
+                          ✅
                         </button>
                         <button className="btn btn-danger btn-sm" onClick={() => updateStatus(a._id, "canceled")}>
-                          ❌ Anulo
+                          ❌
                         </button>
                       </>
                     ) : (
@@ -176,18 +195,13 @@ export default function ClinicAppointments() {
                     )}
                   </td>
                   <td>
-                    {a.attended ? (
-                      <span className="badge bg-success">Po</span>
-                    ) : (
-                      <span className="text-muted">Jo</span>
-                    )}
+                    <button className="btn btn-outline-primary btn-sm" onClick={() => downloadPDF(a._id)}>
+                      📄
+                    </button>
                   </td>
                   <td>
-                    <button
-                      className="btn btn-outline-primary btn-sm"
-                      onClick={() => downloadPDF(a._id)}
-                    >
-                      📄 Shkarko
+                    <button className="btn btn-outline-danger btn-sm" onClick={() => deleteAppointment(a._id)}>
+                      🗑️
                     </button>
                   </td>
                 </tr>
@@ -197,14 +211,16 @@ export default function ClinicAppointments() {
         </div>
       )}
 
-      {/* Modal për dokumentin PDF */}
+      {/* Modal për dokumentin */}
       <Modal
         isOpen={modalIsOpen}
         onRequestClose={() => setModalIsOpen(false)}
         contentLabel="Dokumenti"
         style={{ content: { width: "80%", height: "80%", margin: "auto" } }}
       >
-        <button className="btn btn-danger mb-2" onClick={() => setModalIsOpen(false)}>❌ Mbyll</button>
+        <button className="btn btn-danger mb-2" onClick={() => setModalIsOpen(false)}>
+          ❌ Mbyll
+        </button>
         <iframe src={selectedDocUrl} title="Dokument" width="100%" height="90%"></iframe>
       </Modal>
     </div>

@@ -1,4 +1,3 @@
-// src/pages/Doctor/AddVisitReport.jsx
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Form, Button, Alert, Card, Spinner } from "react-bootstrap";
@@ -18,15 +17,11 @@ export default function AddVisitReport() {
 
   useEffect(() => {
     (async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const res = await axios.get("https://medpal-aqpz.onrender.com/api/appointments/doctor", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setAppointments(res.data.filter(a => a.status === "approved"));
-      } catch (err) {
-        console.error("❌ Gabim në marrjen e termineve:", err);
-      }
+      const token = localStorage.getItem("token");
+      const res = await axios.get(`${API}/api/appointments/doctor`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setAppointments(res.data.filter(a => a.status === "approved"));
     })();
   }, []);
 
@@ -37,23 +32,14 @@ export default function AddVisitReport() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
-    setMessage({ text: "", type: "" });
     try {
       const token = localStorage.getItem("token");
-      await axios.post("https://medpal-aqpz.onrender.com/api/reports", form, {
+      await axios.post(`${API}/api/reports`, form, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setMessage({ text: "✅ Raporti u ruajt me sukses!", type: "success" });
-      setForm({
-        appointmentId: "",
-        diagnosis: "",
-        recommendation: "",
-        temperature: "",
-        bloodPressure: "",
-        symptoms: "",
-      });
-    } catch (err) {
-      console.error("❌ Gabim gjatë ruajtjes së raportit:", err);
+      setForm({ appointmentId: "", diagnosis: "", recommendation: "", temperature: "", bloodPressure: "", symptoms: "" });
+    } catch {
       setMessage({ text: "❌ Dështoi ruajtja e raportit.", type: "danger" });
     } finally {
       setSubmitting(false);
@@ -65,21 +51,12 @@ export default function AddVisitReport() {
       <Card.Body>
         <Card.Title className="mb-4">🧾 Krijo Raport Vizite</Card.Title>
 
-        {message.text && (
-          <Alert variant={message.type}>
-            {message.text}
-          </Alert>
-        )}
+        {message.text && <Alert variant={message.type}>{message.text}</Alert>}
 
         <Form onSubmit={handleSubmit}>
           <Form.Group className="mb-3">
             <Form.Label>📋 Zgjedh Terminin</Form.Label>
-            <Form.Select
-              name="appointmentId"
-              value={form.appointmentId}
-              onChange={handleChange}
-              required
-            >
+            <Form.Select name="appointmentId" value={form.appointmentId} onChange={handleChange} required>
               <option value="">-- Zgjidh --</option>
               {appointments.map(a => (
                 <option key={a._id} value={a._id}>
@@ -91,77 +68,32 @@ export default function AddVisitReport() {
 
           <Form.Group className="mb-3">
             <Form.Label>Diagnoza</Form.Label>
-            <Form.Control
-              as="textarea"
-              name="diagnosis"
-              value={form.diagnosis}
-              onChange={handleChange}
-              placeholder="Përshkruaj diagnozën"
-              rows={3}
-              required
-            />
+            <Form.Control as="textarea" name="diagnosis" value={form.diagnosis} onChange={handleChange} rows={3} required/>
           </Form.Group>
 
           <Form.Group className="mb-3">
             <Form.Label>Rekomandime</Form.Label>
-            <Form.Control
-              as="textarea"
-              name="recommendation"
-              value={form.recommendation}
-              onChange={handleChange}
-              placeholder="Rekomandimet për pacientin"
-              rows={2}
-            />
+            <Form.Control as="textarea" name="recommendation" value={form.recommendation} onChange={handleChange} rows={2}/>
           </Form.Group>
 
           <Form.Group className="row mb-3">
             <div className="col">
               <Form.Label>Temperatura (°C)</Form.Label>
-              <Form.Control
-                type="number"
-                name="temperature"
-                value={form.temperature}
-                onChange={handleChange}
-                placeholder="p.sh. 37.5"
-              />
+              <Form.Control type="number" name="temperature" value={form.temperature} onChange={handleChange}/>
             </div>
             <div className="col">
               <Form.Label>Tensioni</Form.Label>
-              <Form.Control
-                type="text"
-                name="bloodPressure"
-                value={form.bloodPressure}
-                onChange={handleChange}
-                placeholder="p.sh. 120/80"
-              />
+              <Form.Control type="text" name="bloodPressure" value={form.bloodPressure} onChange={handleChange}/>
             </div>
           </Form.Group>
 
           <Form.Group className="mb-4">
             <Form.Label>Simptomat</Form.Label>
-            <Form.Control
-              type="text"
-              name="symptoms"
-              value={form.symptoms}
-              onChange={handleChange}
-              placeholder="Listo simptomat"
-            />
+            <Form.Control type="text" name="symptoms" value={form.symptoms} onChange={handleChange}/>
           </Form.Group>
 
           <Button variant="primary" type="submit" disabled={submitting} className="w-100">
-            {submitting ? (
-              <>
-                <Spinner
-                  as="span"
-                  animation="border"
-                  size="sm"
-                  role="status"
-                  aria-hidden="true"
-                /> Po ruhet...
-              </>
-            ) : (
-              "💾 Ruaj Raportin"
-            )}
+            {submitting ? <Spinner animation="border" size="sm" /> : "💾 Ruaj Raportin"}
           </Button>
         </Form>
       </Card.Body>

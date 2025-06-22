@@ -179,28 +179,27 @@ router.get("/mine", verifyToken, async (req, res) => {
 });
 
 // 👨‍⚕️ GET /api/appointments/doctor
+// 👨‍⚕️ GET /api/appointments/doctor
 router.get("/doctor", verifyToken, async (req, res) => {
   try {
-    if (req.user.role !== "doctor") return res.status(403).json({ message: "Vetëm mjekët kanë qasje." });
-    const appointments = await Appointment.find({ doctorId: req.user.id })
-  .populate("patientId", "name email dateOfBirth")
-  .populate("serviceId", "name")
-  .sort({ date: -1 })
-  .lean(); // për manipulim me objektin
+    if (req.user.role !== "doctor") {
+      return res.status(403).json({ message: "Vetëm mjekët kanë qasje." });
+    }
 
-// 👉 Shto dokumentet për çdo takim
-for (let appt of appointments) {
-  if (appt.patientId && appt.patientId._id) {
-    appt.documents = await Document.find({ patientId: appt.patientId._id }).lean();
-  } else {
-    appt.documents = [];
-  }
-}
+    const appointments = await Appointment.find({ doctorId: req.user.id, status: { $ne: "canceled" } })
+      .populate("patientId", "name email")
+      .populate("serviceId", "name time date")
+      .sort({ date: -1 })
+      .lean();
 
+    // Për çdo takim, mund të shtojmë dokumentet dhe fushën isPresent
+    for (let appt of appointments) {
+      appt.documents = await Document.find({ appointmentId: appt._id }).lean();
+    }
 
-res.json(appointments);
-
+    res.json(appointments);
   } catch (err) {
+    console.error("❌ Error në /appointments/doctor:", err);
     res.status(500).json({ message: "Gabim gjatë marrjes së termineve." });
   }
 });
@@ -362,5 +361,28 @@ router.put("/:id/attended", verifyToken, async (req, res) => {
   }
 });
 
+router.delete("/:id", verifyToken, async (req, res) => {
+  try {
+    const appointment = await Appointment.findById(req.params.id);
+    if (!appointment) {
+      return res.status(404).json({ message: "Termini nuk u gjet." });
+    }
+
+    // opsional: kontrollo që useri ka të drejtë me fshi
+    if (
+      req.user.role !== "clinic" &&
+      req.user.role !== "doctor" &&
+      req.user.role !== "admin"
+    ) {
+      return res.status(403).json({ message: "Nuk keni autorizim për të fshirë këtë termin." });
+    }
+
+    await appointment.deleteOne();
+    res.json({ message: "Termini u fshi me sukses." });
+  } catch (err) {
+    console.error("❌ Gabim gjatë fshirjes së terminit:", err);
+    res.status(500).json({ message: "Gabim në server." });
+  }
+});
 
 module.exports = router;

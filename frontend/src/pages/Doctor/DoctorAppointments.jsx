@@ -1,202 +1,214 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import * as XLSX from "xlsx";
-import { saveAs } from "file-saver";
 import Modal from "react-modal";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 Modal.setAppElement("#root");
 
-export default function ClinicAppointments() {
+export default function DoctorAppointments() {
   const [appointments, setAppointments] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
   const [modalIsOpen, setModalIsOpen] = useState(false);
-  const [selectedDocUrl, setSelectedDocUrl] = useState("");
+  const [selectedId, setSelectedId] = useState("");
+  const [fileTitle, setFileTitle] = useState("");
+  const [file, setFile] = useState(null);
 
   const fetchAppointments = async () => {
+    const token = localStorage.getItem("token");
     try {
-      const token = localStorage.getItem("token");
-      const res = await axios.get("https://medpal-aqpz.onrender.com/api/appointments/all", {
+      const res = await axios.get("https://medpal-aqpz.onrender.com/api/appointments/doctor", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setAppointments(res.data);
     } catch (err) {
-      console.error("❌ Gabim gjatë marrjes së termineve:", err);
+      console.error("❌ Gabim në fetchAppointments:", err);
     }
-  };
-
-  const updateStatus = async (appointmentId, status) => {
-    if (!window.confirm(`A dëshironi të ${status === "approved" ? "aprovoni" : "anuloni"} këtë termin?`)) return;
-    try {
-      const token = localStorage.getItem("token");
-      await axios.put(
-        `https://medpal-aqpz.onrender.com/api/appointments/${appointmentId}/status`,
-        { status },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      fetchAppointments();
-    } catch (err) {
-      console.error("❌ Gabim gjatë përditësimit të statusit:", err);
-    }
-  };
-
-  const downloadPDF = async (appointmentId) => {
-    try {
-      const token = localStorage.getItem("token");
-      const res = await axios.get(`https://medpal-aqpz.onrender.com/api/appointments/${appointmentId}/pdf`, {
-        headers: { Authorization: `Bearer ${token}` },
-        responseType: "blob",
-      });
-
-      const blob = new Blob([res.data], { type: "application/pdf" });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `raporti_${appointmentId}.pdf`;
-      link.click();
-    } catch (err) {
-      console.error("❌ Gabim gjatë shkarkimit të PDF:", err);
-    }
-  };
-
-  const exportToExcel = () => {
-    const dataToExport = filteredAppointments.map((a) => ({
-      Pacienti: a.patientId?.name || "",
-      Email: a.patientId?.email || "",
-      Data: a.date,
-      Ora: a.time,
-      Doktori: a.doctorId?.name || "",
-      Statusi: a.status,
-    }));
-
-    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Terminet");
-
-    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
-    const file = new Blob([excelBuffer], { type: "application/octet-stream" });
-    saveAs(file, "Terminet_Klinikes.xlsx");
-  };
-
-  const openModal = (fileUrl) => {
-    setSelectedDocUrl("https://medpal-aqpz.onrender.com" + fileUrl);
-    setModalIsOpen(true);
   };
 
   useEffect(() => {
     fetchAppointments();
   }, []);
 
-  const filteredAppointments = appointments.filter((a) => {
-    const query = searchTerm.toLowerCase();
-    return (
-      a.patientId?.name?.toLowerCase().includes(query) ||
-      a.patientId?.email?.toLowerCase().includes(query) ||
-      a.doctorId?.name?.toLowerCase().includes(query) ||
-      a.date?.includes(query)
-    );
-  });
+  const downloadPDF = async (id) => {
+    const token = localStorage.getItem("token");
+    try {
+      const res = await axios.get(`https://medpal-aqpz.onrender.com/api/appointments/${id}/pdf`, {
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: "blob",
+      });
+      const blob = new Blob([res.data], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `raporti_${id}.pdf`;
+      link.click();
+    } catch (err) {
+      console.error("❌ Gabim gjatë shkarkimit të PDF:", err);
+    }
+  };
+
+  const deleteAppointment = async (id) => {
+    if (!window.confirm("A jeni të sigurt që doni ta fshini këtë termin?")) return;
+    const token = localStorage.getItem("token");
+    try {
+      await axios.delete(`https://medpal-aqpz.onrender.com/api/appointments/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      fetchAppointments();
+    } catch (err) {
+      console.error("❌ Gabim gjatë fshirjes së terminit:", err);
+    }
+  };
+
+  const openModal = (id) => {
+    setSelectedId(id);
+    setModalIsOpen(true);
+  };
+
+  const handleUpload = async (e) => {
+    e.preventDefault();
+    if (!fileTitle || !file) return alert("Plotëso të dhënat e dokumentit.");
+
+    const formData = new FormData();
+    formData.append("title", fileTitle);
+    formData.append("file", file);
+
+    const token = localStorage.getItem("token");
+    try {
+      await axios.post(
+        `https://medpal-aqpz.onrender.com/api/documents/upload/${selectedId}`,
+        formData,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setModalIsOpen(false);
+      setFileTitle("");
+      setFile(null);
+      fetchAppointments();
+    } catch (err) {
+      console.error("❌ Gabim gjatë ngarkimit të dokumentit:", err);
+    }
+  };
 
   return (
-    <div className="container py-5" style={{ maxWidth: "1000px" }}>
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 className="text-success">📅 Terminet për Klinikën</h2>
-        <button className="btn btn-success" onClick={exportToExcel}>
-          ⬇️ Eksporto Excel
-        </button>
+    <div className="container py-5">
+      <h2 className="text-center mb-4">📅 Terminet e Pacientëve</h2>
+      <div className="table-responsive">
+        <table className="table table-bordered table-hover align-middle">
+          <thead className="table-light">
+            <tr>
+              <th>Pacienti</th>
+              <th>Email</th>
+              <th>Data</th>
+              <th>Ora</th>
+              <th>Prezent</th>
+              <th>Dokumente</th>
+              <th>Statusi</th>
+              <th>Raport</th>
+              <th>📎</th>
+              <th>🗑️</th>
+            </tr>
+          </thead>
+          <tbody>
+            {appointments.map((a) => (
+              <tr key={a._id}>
+                <td>{a.patientId?.name}</td>
+                <td>{a.patientId?.email}</td>
+                <td>{a.date}</td>
+                <td>{a.time}</td>
+                <td>
+                  <span className={`badge bg-${a.isPresent ? "success" : "secondary"}`}>
+                    {a.isPresent ? "Po" : "Jo"}
+                  </span>
+                </td>
+                <td>
+                  {a.documents?.length > 0 ? (
+                    <ul className="mb-0">
+                      {a.documents.map((d, i) => (
+                        <li key={i}>
+                          <a
+                            href={`https://medpal-aqpz.onrender.com${d.fileUrl}`}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            📎 {d.title}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <span className="text-muted">—</span>
+                  )}
+                </td>
+                <td>
+                  <span className={`badge bg-${a.status === "approved" ? "success" : "secondary"}`}>
+                    {a.status}
+                  </span>
+                </td>
+                <td>
+                  <button
+                    className="btn btn-outline-primary btn-sm"
+                    onClick={() => downloadPDF(a._id)}
+                  >
+                    📄
+                  </button>
+                </td>
+                <td>
+                  <button
+                    className="btn btn-sm btn-outline-success"
+                    onClick={() => openModal(a._id)}
+                  >
+                    📎
+                  </button>
+                </td>
+                <td>
+                  <button
+                    className="btn btn-sm btn-outline-danger"
+                    onClick={() => deleteAppointment(a._id)}
+                  >
+                    🗑️
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
 
-      <input
-        type="text"
-        className="form-control mb-4"
-        placeholder="🔍 Kërko sipas pacientit, doktorit, datës apo emailit..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-      />
-
-      {filteredAppointments.length === 0 ? (
-        <p className="text-muted">Nuk ka termine të regjistruara ose kërkimi nuk përputhet me asnjë rezultat.</p>
-      ) : (
-        <div className="table-responsive">
-          <table className="table table-bordered table-hover align-middle">
-            <thead className="table-light">
-              <tr>
-                <th>Pacienti</th>
-                <th>Email</th>
-                <th>Data</th>
-                <th>Ora</th>
-                <th>Doktori</th>
-                <th>Dokumente</th>
-                <th>Statusi</th>
-                <th>Raport</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredAppointments.map((a) => (
-                <tr key={a._id}>
-                  <td>{a.patientId?.name}</td>
-                  <td>{a.patientId?.email}</td>
-                  <td>{a.date}</td>
-                  <td>{a.time}</td>
-                  <td>{a.doctorId?.name || "-"}</td>
-                  <td>
-                    {a.documents && a.documents.length > 0 ? (
-                      <ul>
-                        {a.documents.map((doc, i) => (
-                          <li key={i}>
-                            <button
-                              className="btn btn-link p-0"
-                              onClick={() => openModal(doc.fileUrl)}
-                            >
-                              📎 {doc.title}
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <span style={{ color: "gray" }}>Nuk ka dokumente</span>
-                    )}
-                  </td>
-                  <td>
-                    {a.status === "pending" ? (
-                      <>
-                        <button className="btn btn-success btn-sm me-2" onClick={() => updateStatus(a._id, "approved")}>
-                          ✅ Aprovo
-                        </button>
-                        <button className="btn btn-danger btn-sm" onClick={() => updateStatus(a._id, "canceled")}>
-                          ❌ Anulo
-                        </button>
-                      </>
-                    ) : (
-                      <span className={`badge bg-${a.status === "approved" ? "success" : "secondary"}`}>
-                        {a.status}
-                      </span>
-                    )}
-                  </td>
-                  <td>
-                    <button
-                      className="btn btn-outline-primary btn-sm"
-                      onClick={() => downloadPDF(a._id)}
-                    >
-                      📄 Shkarko
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {/* Modal për dokumentin PDF */}
+      {/* Modal për ngarkim dokumenti */}
       <Modal
         isOpen={modalIsOpen}
         onRequestClose={() => setModalIsOpen(false)}
-        contentLabel="Dokumenti"
-        style={{ content: { width: "80%", height: "80%", margin: "auto" } }}
+        contentLabel="Ngarko Dokument"
+        style={{ content: { maxWidth: "500px", margin: "auto" } }}
       >
-        <button className="btn btn-danger mb-2" onClick={() => setModalIsOpen(false)}>❌ Mbyll</button>
-        <iframe src={selectedDocUrl} title="Dokument" width="100%" height="90%"></iframe>
+        <h4 className="mb-3">📎 Shto Dokument</h4>
+        <form onSubmit={handleUpload}>
+          <div className="mb-3">
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Titulli i dokumentit"
+              value={fileTitle}
+              onChange={(e) => setFileTitle(e.target.value)}
+              required
+            />
+          </div>
+          <div className="mb-3">
+            <input
+              type="file"
+              className="form-control"
+              onChange={(e) => setFile(e.target.files[0])}
+              required
+            />
+          </div>
+          <div className="d-flex justify-content-end">
+            <button className="btn btn-primary me-2">🚀 Ngarko</button>
+            <button type="button" className="btn btn-secondary" onClick={() => setModalIsOpen(false)}>
+              ❌ Anulo
+            </button>
+          </div>
+        </form>
       </Modal>
     </div>
   );
