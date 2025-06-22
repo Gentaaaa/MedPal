@@ -24,10 +24,10 @@ export default function ClinicAddDoctor() {
     const fetchData = async () => {
       try {
         const [depRes, srvRes] = await Promise.all([
-          axios.get(`${API}/clinic/departments`, {
+          axios.get(`${API}/api/clinic/departments`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          axios.get(`${API}/clinic/services`, {
+          axios.get(`${API}/api/clinic/services`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
         ]);
@@ -63,7 +63,7 @@ export default function ClinicAddDoctor() {
     const token = localStorage.getItem("token");
 
     try {
-      await axios.post(`${API}/users/register-doctor`, formData, {
+      await axios.post(`${API}/api/users/register-doctor`, formData, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
