@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
-const API = import.meta.env.VITE_API_BASE_URL;
 
+const API = import.meta.env.VITE_API_BASE_URL;
 
 export default function ClinicAddDoctor() {
   const [formData, setFormData] = useState({
@@ -20,19 +20,20 @@ export default function ClinicAddDoctor() {
     const token = localStorage.getItem("token");
 
     axios
-  .get("https://medpal-aqpz.onrender.com/api/clinic/departments", {
-    headers: { Authorization: `Bearer ${token}` },
-  })
-  .then((res) => setDepartments(res.data))
-  .catch((err) => console.error("❌ Gabim në departamente:", err));
+      .get(`${API}/clinic/departments`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((res) => setDepartments(res.data))
+      .catch((err) => console.error("❌ Gabim në departamente:", err));
 
     axios
-  .get("https://medpal-aqpz.onrender.com/api/clinic/services", {
-    headers: { Authorization: `Bearer ${token}` },
-  })
-  .then((res) => setClinicServices(res.data))
-  .catch((err) => console.error("❌ Gabim në shërbime:", err));
+      .get(`${API}/clinic/services`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((res) => setClinicServices(res.data))
+      .catch((err) => console.error("❌ Gabim në shërbime:", err));
   }, []);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -53,10 +54,9 @@ export default function ClinicAddDoctor() {
     const token = localStorage.getItem("token");
 
     try {
-      await axios.post("https://medpal-aqpz.onrender.com/api/auth/register-doctor", formData, {
-  headers: { Authorization: `Bearer ${token}` },
-});
-
+      await axios.post(`${API}/users/register-doctor`, formData, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       alert("👨‍⚕️ Mjeku u shtua me sukses!");
       setFormData({
@@ -76,6 +76,7 @@ export default function ClinicAddDoctor() {
     <div className="container py-5" style={{ maxWidth: "600px" }}>
       <h2 className="mb-4 text-success">➕ Shto Mjek të Ri</h2>
       <form onSubmit={handleSubmit}>
+        {/* Emri */}
         <div className="mb-3">
           <label className="form-label">Emri i mjekut</label>
           <input
@@ -89,6 +90,7 @@ export default function ClinicAddDoctor() {
           />
         </div>
 
+        {/* Emaili */}
         <div className="mb-3">
           <label className="form-label">Emaili</label>
           <input
@@ -103,6 +105,7 @@ export default function ClinicAddDoctor() {
           />
         </div>
 
+        {/* Fjalëkalimi */}
         <div className="mb-3">
           <label className="form-label">Fjalëkalimi</label>
           <input
@@ -117,6 +120,7 @@ export default function ClinicAddDoctor() {
           />
         </div>
 
+        {/* Departamenti */}
         <div className="mb-3">
           <label className="form-label">Departamenti</label>
           <select
@@ -135,6 +139,7 @@ export default function ClinicAddDoctor() {
           </select>
         </div>
 
+        {/* Shërbimet */}
         <div className="mb-4">
           <label className="form-label">Shërbimet</label>
           <div className="border rounded p-3" style={{ maxHeight: "200px", overflowY: "auto" }}>
@@ -156,6 +161,7 @@ export default function ClinicAddDoctor() {
           </div>
         </div>
 
+        {/* Submit */}
         <button type="submit" className="btn btn-success w-100">
           Shto Mjekun
         </button>
@@ -163,4 +169,3 @@ export default function ClinicAddDoctor() {
     </div>
   );
 }
-
