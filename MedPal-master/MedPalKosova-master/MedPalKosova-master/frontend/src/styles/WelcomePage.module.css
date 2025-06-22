@@ -1,0 +1,128 @@
+.container {
+  font-family: 'Segoe UI', sans-serif;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: linear-gradient(to bottom right, #f8f9fa, #e9ecef);
+  color: #333;
+}
+
+.header {
+  text-align: center;
+  padding: 3rem 1rem;
+  background-color: #4e73df;
+  color: white;
+}
+
+.highlight {
+  color: #ffd700;
+}
+
+.main {
+  flex: 1;
+  padding: 2rem;
+}
+
+.infoSection {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+.card {
+  background-color: white;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: 280px;
+  text-align: center;
+  transition: transform 0.2s;
+}
+
+.card:hover {
+  transform: scale(1.05);
+}
+
+.authButtons {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+}
+
+.btnPrimary,
+.btnSecondary {
+  padding: 0.75rem 2rem;
+  border-radius: 30px;
+  text-decoration: none;
+  font-weight: bold;
+  transition: background-color 0.3s;
+}
+
+.btnPrimary {
+  background-color: #4e73df;
+  color: white;
+}
+
+.btnPrimary:hover {
+  background-color: #2e59d9;
+}
+
+.btnSecondary {
+  background-color: white;
+  color: #4e73df;
+  border: 2px solid #4e73df;
+}
+
+.btnSecondary:hover {
+  background-color: #f1f1f1;
+}
+
+.footer {
+  text-align: center;
+  padding: 1rem;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.dashboard {
+  padding: 2rem;
+  font-family: sans-serif;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.btn.logout {
+  padding: 0.5rem 1rem;
+  background-color: crimson;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.dashboard-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1rem;
+  text-decoration: none;
+  color: black;
+  background-color: #f9f9f9;
+  transition: 0.3s;
+}
+
+.card:hover {
+  background-color: #e6f0ff;
+  transform: scale(1.02);
+}
