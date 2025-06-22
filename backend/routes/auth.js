@@ -8,12 +8,16 @@ const router = express.Router();
 const User = require("../models/User");
 const verifyToken = require("../middleware/verifyToken");
 const checkRole = require("../middleware/roles");
-const { sendVerificationEmail, sendDoctorWelcomeEmail } = require("../utils/sendEmail");
+const {
+  sendVerificationEmail,
+  sendDoctorWelcomeEmail,
+} = require("../utils/sendEmail");
 
 // === REGISTER ===
 router.post("/register", async (req, res) => {
   const { name, email, password, role, clinicCode } = req.body;
-  if (!name || !email || !password || !role) return res.status(400).json({ message: "Të gjitha fushat janë të nevojshme" });
+  if (!name || !email || !password || !role)
+    return res.status(400).json({ message: "Të gjitha fushat janë të nevojshme" });
 
   const exists = await User.findOne({ email });
   if (exists) return res.status(400).json({ message: "Emaili ekziston tashmë." });
@@ -22,7 +26,14 @@ router.post("/register", async (req, res) => {
 
   if (role === "patient") {
     const code = crypto.randomBytes(3).toString("hex");
-    const newUser = new User({ name, email, password: hashed, role, isVerified: false, verificationCode: code });
+    const newUser = new User({
+      name,
+      email,
+      password: hashed,
+      role,
+      isVerified: false,
+      verificationCode: code,
+    });
     await newUser.save();
     await sendVerificationEmail(email, code);
     return res.status(201).json({ message: "Verifikoni emailin." });
@@ -43,7 +54,8 @@ router.post("/register", async (req, res) => {
 router.post("/verify-email", async (req, res) => {
   const { email, code } = req.body;
   const user = await User.findOne({ email });
-  if (!user || user.verificationCode !== code) return res.status(400).json({ message: "Kodi i pasaktë." });
+  if (!user || user.verificationCode !== code)
+    return res.status(400).json({ message: "Kodi i pasaktë." });
 
   user.isVerified = true;
   user.verificationCode = null;
@@ -57,11 +69,13 @@ router.post("/login", async (req, res) => {
   const user = await User.findOne({ email });
   if (!user) return res.status(404).json({ message: "Email nuk ekziston." });
 
-  if (user.role !== expectedRole) return res.status(403).json({ message: "Roli nuk përputhet." });
+  if (user.role !== expectedRole)
+    return res.status(403).json({ message: "Roli nuk përputhet." });
 
-  if (expectedRole === "patient" && !user.isVerified) {
-    return res.status(401).json({ message: "Verifikoni emailin." });
-  }
+  // ❌ Kjo pjesë u largua:
+  // if (expectedRole === "patient" && !user.isVerified) {
+  //   return res.status(401).json({ message: "Verifikoni emailin." });
+  // }
 
   if (expectedRole === "admin" && adminSecret !== process.env.ADMIN_SECRET) {
     return res.status(403).json({ message: "Kodi sekret gabim." });
@@ -70,8 +84,20 @@ router.post("/login", async (req, res) => {
   const match = await bcrypt.compare(password, user.password);
   if (!match) return res.status(401).json({ message: "Fjalëkalim i pasaktë." });
 
-  const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "1d" });
-  res.json({ token, user: { _id: user._id, name: user.name, email: user.email, role: user.role } });
+  const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
+    expiresIn: "1d",
+  });
+
+  res.json({
+    token,
+    user: {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      isVerified: user.isVerified,
+    },
+  });
 });
 
 // === LOGIN DOCTOR ===
@@ -83,8 +109,20 @@ router.post("/login-doctor", async (req, res) => {
   const match = await bcrypt.compare(password, doctor.password);
   if (!match) return res.status(401).json({ message: "Fjalëkalim i gabuar." });
 
-  const token = jwt.sign({ id: doctor._id, role: doctor.role }, process.env.JWT_SECRET, { expiresIn: "1d" });
-  res.json({ token, user: { _id: doctor._id, name: doctor.name, role: doctor.role, doctorCode: doctor.doctorCode } });
+  const token = jwt.sign({ id: doctor._id, role: doctor.role }, process.env.JWT_SECRET, {
+    expiresIn: "1d",
+  });
+
+  res.json({
+    token,
+    user: {
+      _id: doctor._id,
+      name: doctor.name,
+      role: doctor.role,
+      doctorCode: doctor.doctorCode,
+      clinicId: doctor.clinicId,
+    },
+  });
 });
 
 // === FORGOT / RESET PASSWORD ===
@@ -103,7 +141,8 @@ router.post("/forgot-password", async (req, res) => {
 router.post("/reset-password", async (req, res) => {
   const { email, role, code, newPassword } = req.body;
   const user = await User.findOne({ email, role });
-  if (!user || user.verificationCode !== code) return res.status(400).json({ message: "Kodi i pasaktë." });
+  if (!user || user.verificationCode !== code)
+    return res.status(400).json({ message: "Kodi i pasaktë." });
 
   user.password = await bcrypt.hash(newPassword, 10);
   user.verificationCode = null;
