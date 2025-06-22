@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "../../styles/dashboard.css";
+
 
 export default function DoctorDashboard() {
   const user = JSON.parse(localStorage.getItem("user"));
