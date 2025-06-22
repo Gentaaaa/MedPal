@@ -54,5 +54,55 @@ router.post("/upload/:appointmentId", verifyToken, upload.single("file"), async 
     res.status(500).json({ message: "Gabim gjatë ngarkimit." });
   }
 });
+// 📤 POST /api/documents/upload (pa appointmentId në URL)
+router.post("/upload", verifyToken, upload.single("file"), async (req, res) => {
+  try {
+    const { title } = req.body;
+    const fileUrl = "/uploads/" + req.file.filename;
+
+    // Gjejmë takimin e fundit të pacientit
+    const lastAppointment = await Appointment.findOne({
+      patientId: req.user.id,
+      status: "approved",
+    }).sort({ date: -1 });
+
+    if (!lastAppointment) {
+      return res.status(404).json({ message: "Nuk u gjet asnjë takim." });
+    }
+
+    const document = new Document({
+      title,
+      fileUrl,
+      patientId: req.user.id,
+      appointmentId: lastAppointment._id,
+      doctorId: lastAppointment.doctorId,
+    });
+
+    await document.save();
+
+    await Appointment.findByIdAndUpdate(lastAppointment._id, {
+      $push: { documents: document._id },
+    });
+
+    res.status(201).json({ message: "Dokumenti u ngarkua me sukses", document });
+  } catch (err) {
+    console.error("❌ Error uploading document:", err);
+    res.status(500).json({ message: "Gabim gjatë ngarkimit." });
+  }
+});
+// routes/documents.js
+router.post("/upload", verifyToken, upload.single("file"), async (req, res) => {
+  const { title } = req.body;
+  const fileUrl = "/uploads/" + req.file.filename;
+
+  const doc = new Document({
+    title,
+    fileUrl,
+    patientId: req.user.id,
+  });
+
+  await doc.save();
+  res.status(201).json({ message: "Dokumenti u ngarkua me sukses", document: doc });
+});
 
 module.exports = router;
