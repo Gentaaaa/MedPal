@@ -54,9 +54,9 @@ router.post("/upload/:appointmentId", verifyToken, upload.single("file"), async 
       $push: { documents: document._id },
     });
 
-    res.status(201).json({ message: "Dokumenti u ngarkua me sukses", document });
+    res.status(201).json({ message: "📎 Dokumenti u ngarkua me sukses", document });
   } catch (err) {
-    console.error("❌ Error uploading document:", err);
+    console.error("❌ Error uploading document with appointmentId:", err);
     res.status(500).json({ message: "Gabim gjatë ngarkimit." });
   }
 });
@@ -70,6 +70,11 @@ router.post("/upload", verifyToken, upload.single("file"), async (req, res) => {
     const { title } = req.body;
     const fileUrl = "/uploads/" + req.file.filename;
 
+    // ✅ Sigurohu që vetëm pacienti mund ta përdorë këtë endpoint
+    if (req.user.role !== "patient") {
+      return res.status(403).json({ message: "Vetëm pacientët mund të ngarkojnë dokument pa takim." });
+    }
+
     const doc = new Document({
       title,
       fileUrl,
@@ -77,9 +82,9 @@ router.post("/upload", verifyToken, upload.single("file"), async (req, res) => {
     });
 
     await doc.save();
-    res.status(201).json({ message: "Dokumenti u ngarkua me sukses", document: doc });
+    res.status(201).json({ message: "📎 Dokumenti u ngarkua me sukses", document: doc });
   } catch (err) {
-    console.error("❌ Error uploading document:", err);
+    console.error("❌ Error uploading document (no appointment):", err);
     res.status(500).json({ message: "Gabim gjatë ngarkimit." });
   }
 });
