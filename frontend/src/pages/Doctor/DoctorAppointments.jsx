@@ -100,9 +100,7 @@ export default function DoctorAppointments() {
                   ))
                   : <span className="text-muted">—</span>
                 }
-                <button className="btn btn-sm btn-outline-primary mt-1" onClick={() => openModal(a._id)}>
-                  ➕ Ngarko
-                </button>
+                
               </td>
               <td>{a.status}</td>
               

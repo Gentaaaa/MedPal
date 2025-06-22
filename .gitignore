@@ -28,9 +28,6 @@ jspm_packages/
 # Coverage
 coverage/
 
-# Uploads (nëse përdor file lokale)
-uploads/
-public/uploads/
 
 # IDEs and editors
 .vscode/
