@@ -1,16 +1,9 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import Modal from "react-modal";
 import "bootstrap/dist/css/bootstrap.min.css";
-
-Modal.setAppElement("#root");
 
 export default function DoctorAppointments() {
   const [appointments, setAppointments] = useState([]);
-  const [modalIsOpen, setModalIsOpen] = useState(false);
-  const [selectedId, setSelectedId] = useState("");
-  const [fileTitle, setFileTitle] = useState("");
-  const [file, setFile] = useState(null);
 
   const fetchAppointments = async () => {
     const token = localStorage.getItem("token");
@@ -73,37 +66,6 @@ export default function DoctorAppointments() {
     }
   };
 
-  const openModal = (id) => {
-    setSelectedId(id);
-    setModalIsOpen(true);
-  };
-
-  const handleUpload = async (e) => {
-    e.preventDefault();
-    if (!fileTitle || !file) return alert("Plotëso të dhënat e dokumentit.");
-
-    const formData = new FormData();
-    formData.append("title", fileTitle);
-    formData.append("file", file);
-
-    const token = localStorage.getItem("token");
-    try {
-      await axios.post(
-        `https://medpal-aqpz.onrender.com/api/documents/upload/${selectedId}`,
-        formData,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      setModalIsOpen(false);
-      setFileTitle("");
-      setFile(null);
-      fetchAppointments();
-    } catch (err) {
-      console.error("❌ Gabim gjatë ngarkimit të dokumentit:", err);
-    }
-  };
-
   return (
     <div className="container py-5">
       <h2 className="text-center mb-4">📅 Terminet e Pacientëve</h2>
@@ -119,7 +81,6 @@ export default function DoctorAppointments() {
               <th>Dokumente</th>
               <th>Statusi</th>
               <th>Raport</th>
-              <th>📎</th>
               <th>🗑️</th>
             </tr>
           </thead>
@@ -172,14 +133,6 @@ export default function DoctorAppointments() {
                 </td>
                 <td>
                   <button
-                    className="btn btn-sm btn-outline-success"
-                    onClick={() => openModal(a._id)}
-                  >
-                    📎
-                  </button>
-                </td>
-                <td>
-                  <button
                     className="btn btn-sm btn-outline-danger"
                     onClick={() => deleteAppointment(a._id)}
                   >
@@ -191,41 +144,6 @@ export default function DoctorAppointments() {
           </tbody>
         </table>
       </div>
-
-      <Modal
-        isOpen={modalIsOpen}
-        onRequestClose={() => setModalIsOpen(false)}
-        contentLabel="Ngarko Dokument"
-        style={{ content: { maxWidth: "500px", margin: "auto" } }}
-      >
-        <h4 className="mb-3">📎 Shto Dokument</h4>
-        <form onSubmit={handleUpload}>
-          <div className="mb-3">
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Titulli i dokumentit"
-              value={fileTitle}
-              onChange={(e) => setFileTitle(e.target.value)}
-              required
-            />
-          </div>
-          <div className="mb-3">
-            <input
-              type="file"
-              className="form-control"
-              onChange={(e) => setFile(e.target.files[0])}
-              required
-            />
-          </div>
-          <div className="d-flex justify-content-end">
-            <button className="btn btn-primary me-2">🚀 Ngarko</button>
-            <button type="button" className="btn btn-secondary" onClick={() => setModalIsOpen(false)}>
-              ❌ Anulo
-            </button>
-          </div>
-        </form>
-      </Modal>
     </div>
   );
 }

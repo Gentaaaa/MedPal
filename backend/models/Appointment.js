@@ -7,21 +7,18 @@ const appointmentSchema = new mongoose.Schema({
 
   date: { type: String, required: true },
   time: { type: String, required: true },
+
   status: {
     type: String,
     enum: ["pending", "approved", "canceled"],
     default: "pending",
-attended: {
-  type: Boolean,
-  default: false,
-  isPresent: { type: Boolean, default: false }
-
-}
-
-
   },
 
-  seenByPatient: { type: Boolean, default: false }, // 🆕
+  attended: { type: Boolean, default: false },     // ✅ jashtë status-it
+  isPresent: { type: Boolean, default: false },    // ✅ jashtë status-it
+
+  seenByPatient: { type: Boolean, default: false }
 });
+
 
 module.exports = mongoose.model("Appointment", appointmentSchema);
