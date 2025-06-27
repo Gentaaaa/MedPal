@@ -61,7 +61,7 @@ Vite për ndërtim dhe deploy
 Netlify për hostim të frontend-it
 
 🌐 Deploy Links
-Frontend (Netlify): https://medpal.netlify.app
+Frontend (Netlify):(https://medpalks.netlify.app/)
 
 Backend (Render): https://medpal-aqpz.onrender.com
 👩‍💻 Si të ekzekutoni lokalisht
